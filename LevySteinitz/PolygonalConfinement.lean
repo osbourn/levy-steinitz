@@ -27,6 +27,7 @@ variable {n : ℕ} {m : ℕ} {hm : 0 < m} (v : Fin m → EuclideanSpace ℝ (Fin
 
 abbrev sum_indicies (s : Finset (Fin m)) : EuclideanSpace ℝ (Fin n) := ∑ i : s, v i
 
+-- TODO: This needs to be changed to only include combinations that include 0
 noncomputable def maximal_indicies_aux : Option (Finset (Fin m)) :=
   (Finset.univ.powerset : Finset (Finset (Fin m))).toList.argmax (‖sum_indicies v ·‖)
 
@@ -41,8 +42,23 @@ lemma maximal_indicies_aux_isSome : (maximal_indicies_aux v).isSome = true := by
 noncomputable def maximal_indicies : Finset (Fin m) :=
   Option.get (maximal_indicies_aux v) (maximal_indicies_aux_isSome v)
 
+lemma maximal_indicies_mem_aux : maximal_indicies v ∈ maximal_indicies_aux v :=
+  Option.get_mem (maximal_indicies_aux_isSome v)
+
 noncomputable def maximal_vector : EuclideanSpace ℝ (Fin n) :=
   sum_indicies v (maximal_indicies v)
+
+noncomputable def maximal_vector_spec (s : Finset (Fin m))
+  : ‖sum_indicies v s‖ ≤ ‖maximal_vector v‖ := by
+  unfold maximal_vector
+  apply List.le_of_mem_argmax (f := (‖sum_indicies v ·‖))
+  · change s ∈ (Finset.univ.powerset : Finset (Finset (Fin m))).toList
+    aesop
+  · exact maximal_indicies_mem_aux v
+
+lemma same_direction_as_maximal_vector (i : Fin m) (hi : i ∈ maximal_indicies v)
+  : (0 : ℝ) ≤ ⟪v i, maximal_vector v⟫_ℝ := by
+  sorry
 
 theorem polygonal_confinement_theorem
   (hv₁ : ∑ i : Fin m, v i = 0) (hv₂ : ∀ i : Fin m, ‖v i‖ ≤ 1) :
