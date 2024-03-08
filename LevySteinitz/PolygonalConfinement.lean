@@ -25,7 +25,7 @@ theorem linear_polygonal_confinement_theorem {m : ℕ} (hm : 0 < m) (v : Fin m �
 
 variable {n : ℕ} {m : ℕ} [hm : NeZero m] (v : Fin m → EuclideanSpace ℝ (Fin n))
 
-abbrev sum_indicies (s : Finset (Fin m)) : EuclideanSpace ℝ (Fin n) := ∑ i : s, v i
+abbrev sum_indicies (s : Finset (Fin m)) : EuclideanSpace ℝ (Fin n) := ∑ i in s, v i
 
 /--
   All possible combinations of indicies that contain 0
@@ -52,6 +52,9 @@ lemma maximal_indicies_aux_isSome : (maximal_indicies_aux v).isSome = true := by
 noncomputable def maximal_indicies : Finset (Fin m) :=
   Option.get (maximal_indicies_aux v) (maximal_indicies_aux_isSome v)
 
+lemma zero_mem_maximal_indicies : 0 ∈ maximal_indicies v := by
+  sorry
+
 lemma maximal_indicies_mem_aux : maximal_indicies v ∈ maximal_indicies_aux v :=
   Option.get_mem (maximal_indicies_aux_isSome v)
 
@@ -71,14 +74,21 @@ noncomputable def maximal_vector_spec (s : Finset (Fin m)) (h : 0 ∈ s)
 
 noncomputable def maximal_vector_pos : 0 < ‖maximal_vector v‖ := sorry
 
-lemma same_direction_as_maximal_vector (i : Fin m) (hi : i ∈ maximal_indicies v)
+lemma same_direction_as_maximal_vector (i : Fin m) (hi₁ : i ∈ maximal_indicies v) (hi₂ : i ≠ 0)
   : (0 : ℝ) ≤ ⟪v i, maximal_vector v⟫_ℝ := by
   by_contra h
   push_neg at h
   have : ‖(1 / ‖maximal_vector v‖) • (maximal_vector v)‖ = (1 : ℝ) := by
     simp [norm_smul, inv_mul_cancel (maximal_vector_pos v).ne.symm]
-  have : ‖maximal_vector v - v i‖ > ‖maximal_vector v‖ := (calc
-    ‖maximal_vector v - v i‖ ≥ ‖maximal_vector v - v i‖ * ‖(1 / ‖maximal_vector v‖) • (maximal_vector v)‖ := by simp_all
+  have : (1 / ‖maximal_vector v‖) * ⟪v i, maximal_vector v⟫_ℝ < 0 := by
+    exact mul_neg_of_pos_of_neg (div_pos one_pos (maximal_vector_pos v)) h
+  have := maximal_vector_spec v ((maximal_indicies v).erase i)
+  specialize this (Finset.mem_erase.mpr ⟨hi₂.symm, zero_mem_maximal_indicies v⟩)
+  unfold sum_indicies at this
+  rw [Finset.sum_erase_eq_sub hi₁] at this
+  change ‖maximal_vector v - v i‖ ≤ ‖maximal_vector v‖ at this
+  apply not_lt.mpr this
+  calc ‖maximal_vector v - v i‖ ≥ ‖maximal_vector v - v i‖ * ‖(1 / ‖maximal_vector v‖) • (maximal_vector v)‖ := by simp_all
     _ ≥ ⟪maximal_vector v - v i, (1 / ‖maximal_vector v‖) • (maximal_vector v)⟫_ℝ := by
         exact real_inner_le_norm (maximal_vector v - v i) ((1 / ‖maximal_vector v‖) • (maximal_vector v))
     _ = ⟪maximal_vector v, (1 / ‖maximal_vector v‖) • (maximal_vector v)⟫_ℝ - ⟪v i, (1 / ‖maximal_vector v‖) • (maximal_vector v)⟫_ℝ := inner_sub_left _ _ _
@@ -87,9 +97,7 @@ lemma same_direction_as_maximal_vector (i : Fin m) (hi : i ∈ maximal_indicies 
     _ = (1 / ‖maximal_vector v‖ * ‖maximal_vector v‖) * ‖maximal_vector v‖ - ⟪v i, (1 / ‖maximal_vector v‖) • (maximal_vector v)⟫_ℝ := by rw [mul_assoc]
     _ = ‖maximal_vector v‖ - ⟪v i, (1 / ‖maximal_vector v‖) • (maximal_vector v)⟫_ℝ := by simp
     _ = ‖maximal_vector v‖ - (1 / ‖maximal_vector v‖) * ⟪v i, maximal_vector v⟫_ℝ := by rw [inner_smul_right]
-    _ > ‖maximal_vector v‖ := sorry
-  )
-  sorry
+    _ > ‖maximal_vector v‖ := by linarith
 
 theorem polygonal_confinement_theorem
   (hv₁ : ∑ i : Fin m, v i = 0) (hv₂ : ∀ i : Fin m, ‖v i‖ ≤ 1) :
