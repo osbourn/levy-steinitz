@@ -23,13 +23,23 @@ theorem linear_polygonal_confinement_theorem {m : ℕ} (hm : 0 < m) (v : Fin m �
   ∀ j : Fin m, ‖∑ i in Finset.Iic j, v i‖ ≤ 1 := sorry
 -/
 
-variable {n : ℕ} {m : ℕ} {hm : 0 < m} (v : Fin m → EuclideanSpace ℝ (Fin n))
+variable {n : ℕ} {m : ℕ} [hm : NeZero m] (v : Fin m → EuclideanSpace ℝ (Fin n))
 
 abbrev sum_indicies (s : Finset (Fin m)) : EuclideanSpace ℝ (Fin n) := ∑ i : s, v i
 
--- TODO: This needs to be changed to only include combinations that include 0
+/--
+  All possible combinations of indicies that contain 0
+-/
+def possible_indicies : Finset (Finset (Fin m)) :=
+  (Finset.univ.powerset : Finset (Finset (Fin m))).filter (0 ∈ ·)
+
+lemma possible_indicies_nonempty : (possible_indicies (hm := hm)).Nonempty := by
+  use {0}
+  unfold possible_indicies
+  aesop
+
 noncomputable def maximal_indicies_aux : Option (Finset (Fin m)) :=
-  (Finset.univ.powerset : Finset (Finset (Fin m))).toList.argmax (‖sum_indicies v ·‖)
+  possible_indicies.toList.argmax (‖sum_indicies v ·‖)
 
 lemma maximal_indicies_aux_isSome : (maximal_indicies_aux v).isSome = true := by
   by_contra h
@@ -37,7 +47,7 @@ lemma maximal_indicies_aux_isSome : (maximal_indicies_aux v).isSome = true := by
   unfold maximal_indicies_aux at h
   rw [List.argmax_eq_none] at h
   apply Finset.Nonempty.toList_ne_nil _ h
-  exact Finset.powerset_nonempty _
+  exact possible_indicies_nonempty
 
 noncomputable def maximal_indicies : Finset (Fin m) :=
   Option.get (maximal_indicies_aux v) (maximal_indicies_aux_isSome v)
@@ -48,11 +58,14 @@ lemma maximal_indicies_mem_aux : maximal_indicies v ∈ maximal_indicies_aux v :
 noncomputable def maximal_vector : EuclideanSpace ℝ (Fin n) :=
   sum_indicies v (maximal_indicies v)
 
-noncomputable def maximal_vector_spec (s : Finset (Fin m))
+noncomputable def maximal_vector_spec (s : Finset (Fin m)) (h : 0 ∈ s)
   : ‖sum_indicies v s‖ ≤ ‖maximal_vector v‖ := by
+  have : s ∈ possible_indicies := by
+    unfold possible_indicies
+    aesop
   unfold maximal_vector
   apply List.le_of_mem_argmax (f := (‖sum_indicies v ·‖))
-  · change s ∈ (Finset.univ.powerset : Finset (Finset (Fin m))).toList
+  · change s ∈ possible_indicies.toList
     aesop
   · exact maximal_indicies_mem_aux v
 
@@ -62,5 +75,5 @@ lemma same_direction_as_maximal_vector (i : Fin m) (hi : i ∈ maximal_indicies 
 
 theorem polygonal_confinement_theorem
   (hv₁ : ∑ i : Fin m, v i = 0) (hv₂ : ∀ i : Fin m, ‖v i‖ ≤ 1) :
-  ∃ P : Equiv.Perm (Fin m), P ⟨0, hm⟩ = ⟨0, hm⟩ ∧
+  ∃ P : Equiv.Perm (Fin m), P 0 = 0 ∧
   ∀ j : Fin m, ‖∑ i in Finset.Iic j, v i‖ ≤ polygonalConstant n := sorry
