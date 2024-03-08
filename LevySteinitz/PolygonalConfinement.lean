@@ -69,8 +69,26 @@ noncomputable def maximal_vector_spec (s : Finset (Fin m)) (h : 0 ∈ s)
     aesop
   · exact maximal_indicies_mem_aux v
 
+noncomputable def maximal_vector_pos : 0 < ‖maximal_vector v‖ := sorry
+
 lemma same_direction_as_maximal_vector (i : Fin m) (hi : i ∈ maximal_indicies v)
   : (0 : ℝ) ≤ ⟪v i, maximal_vector v⟫_ℝ := by
+  by_contra h
+  push_neg at h
+  have : ‖(1 / ‖maximal_vector v‖) • (maximal_vector v)‖ = (1 : ℝ) := by
+    simp [norm_smul, inv_mul_cancel (maximal_vector_pos v).ne.symm]
+  have : ‖maximal_vector v - v i‖ > ‖maximal_vector v‖ := (calc
+    ‖maximal_vector v - v i‖ ≥ ‖maximal_vector v - v i‖ * ‖(1 / ‖maximal_vector v‖) • (maximal_vector v)‖ := by simp_all
+    _ ≥ ⟪maximal_vector v - v i, (1 / ‖maximal_vector v‖) • (maximal_vector v)⟫_ℝ := by
+        exact real_inner_le_norm (maximal_vector v - v i) ((1 / ‖maximal_vector v‖) • (maximal_vector v))
+    _ = ⟪maximal_vector v, (1 / ‖maximal_vector v‖) • (maximal_vector v)⟫_ℝ - ⟪v i, (1 / ‖maximal_vector v‖) • (maximal_vector v)⟫_ℝ := inner_sub_left _ _ _
+    _ = (1 / ‖maximal_vector v‖) * ⟪maximal_vector v, maximal_vector v⟫_ℝ - ⟪v i, (1 / ‖maximal_vector v‖) • (maximal_vector v)⟫_ℝ := by rw [inner_smul_right]
+    _ = (1 / ‖maximal_vector v‖) * (‖maximal_vector v‖ * ‖maximal_vector v‖) - ⟪v i, (1 / ‖maximal_vector v‖) • (maximal_vector v)⟫_ℝ := by rw [real_inner_self_eq_norm_mul_norm]
+    _ = (1 / ‖maximal_vector v‖ * ‖maximal_vector v‖) * ‖maximal_vector v‖ - ⟪v i, (1 / ‖maximal_vector v‖) • (maximal_vector v)⟫_ℝ := by rw [mul_assoc]
+    _ = ‖maximal_vector v‖ - ⟪v i, (1 / ‖maximal_vector v‖) • (maximal_vector v)⟫_ℝ := by simp
+    _ = ‖maximal_vector v‖ - (1 / ‖maximal_vector v‖) * ⟪v i, maximal_vector v⟫_ℝ := by rw [inner_smul_right]
+    _ > ‖maximal_vector v‖ := sorry
+  )
   sorry
 
 theorem polygonal_confinement_theorem
