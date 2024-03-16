@@ -44,10 +44,6 @@ lemma maximal_indicies_aux_isSome : (maximal_indicies_aux v).isSome = true := by
 noncomputable def maximal_indicies : Finset (Fin m) :=
   Option.get (maximal_indicies_aux v) (maximal_indicies_aux_isSome v)
 
-lemma maximal_indicies_sum_compl : sum_indicies v (maximal_indicies v) + sum_indicies v (maximal_indicies v)ᶜ = 0 := by
-  unfold sum_indicies
-  rwa [add_comm, Finset.sum_compl_add_sum]
-
 lemma maximal_indicies_mem_aux : maximal_indicies v ∈ maximal_indicies_aux v :=
   Option.get_mem (maximal_indicies_aux_isSome v)
 
@@ -78,6 +74,11 @@ lemma maximal_vector_pos : 0 < ‖maximal_vector v‖ := by
   · apply lt_of_lt_of_le _ (maximal_vector_spec v {0} (Finset.mem_singleton_self 0))
     aesop
 
+lemma maximal_vector_sum_compl : maximal_vector v + sum_indicies v (maximal_indicies v)ᶜ = 0 := by
+  unfold maximal_vector
+  unfold sum_indicies
+  rwa [add_comm, Finset.sum_compl_add_sum]
+
 lemma same_direction_as_maximal_vector (i : Fin m) (hi₁ : i ∈ maximal_indicies v) (hi₂ : i ≠ 0)
   : (0 : ℝ) ≤ ⟪v i, maximal_vector v⟫_ℝ := by
   by_contra h
@@ -102,6 +103,30 @@ lemma same_direction_as_maximal_vector (i : Fin m) (hi₁ : i ∈ maximal_indici
     _ = ‖maximal_vector v‖ - ⟪v i, (1 / ‖maximal_vector v‖) • (maximal_vector v)⟫_ℝ := by simp
     _ = ‖maximal_vector v‖ - (1 / ‖maximal_vector v‖) * ⟪v i, maximal_vector v⟫_ℝ := by rw [inner_smul_right]
     _ > ‖maximal_vector v‖ := by linarith
+
+lemma v0_same_direction_as_maximal_vector : (0 : ℝ) ≤ ⟪v 0, maximal_vector v⟫_ℝ := by
+  by_contra! h
+  apply not_lt.mpr (maximal_vector_spec v ({0} ∪ (maximal_indicies v)ᶜ) (by aesop))
+  have : ‖‖maximal_vector v‖⁻¹ • (- maximal_vector v)‖ = (1 : ℝ) := by
+    rw [norm_smul, norm_neg, norm_inv, norm_norm]
+    exact inv_mul_cancel (by aesop)
+  have : ‖maximal_vector v‖⁻¹ * ⟪v 0, maximal_vector v⟫_ℝ < 0 := mul_neg_of_pos_of_neg (by aesop) h
+  have : v 0 - maximal_vector v = sum_indicies v ({0} ∪ (maximal_indicies v)ᶜ) := by
+    unfold sum_indicies
+    rw [←Finset.insert_eq, Finset.sum_insert (Finset.not_mem_compl.mpr (zero_mem_maximal_indicies v))]
+    have := maximal_vector_sum_compl v hv₂
+    unfold sum_indicies at this
+    rw [←eq_neg_iff_add_eq_zero] at this
+    simp [this]
+  calc ‖maximal_vector v‖ < ‖maximal_vector v‖ - ‖maximal_vector v‖⁻¹ * ⟪v 0, maximal_vector v⟫_ℝ := by linarith
+    _ = ⟪‖maximal_vector v‖⁻¹ • (- maximal_vector v), v 0 - maximal_vector v⟫_ℝ := by
+      rw [smul_neg, inner_neg_left]
+      rw [real_inner_smul_left, inner_sub_right]
+      rw [real_inner_self_eq_norm_sq]
+      rw [mul_sub, neg_sub, sq, ←mul_assoc, inv_mul_mul_self, real_inner_comm]
+    _ = ⟪‖maximal_vector v‖⁻¹ • (- maximal_vector v), sum_indicies v ({0} ∪ (maximal_indicies v)ᶜ)⟫_ℝ := by rw [this]
+    _ ≤ ‖‖maximal_vector v‖⁻¹ • (- maximal_vector v)‖ * ‖sum_indicies v ({0} ∪ (maximal_indicies v)ᶜ)‖ := real_inner_le_norm _ _
+    _ ≤ ‖sum_indicies v ({0} ∪ (maximal_indicies v)ᶜ)‖ := by simp_all
 
 theorem polygonal_confinement_theorem
   (hv₁ : ∑ i : Fin m, v i = 0) (hv₂ : ∀ i : Fin m, ‖v i‖ ≤ 1) :
