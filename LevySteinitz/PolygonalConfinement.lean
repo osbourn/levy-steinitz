@@ -17,8 +17,6 @@ lemma polygonalConstantOne : polygonalConstant 1 = 1 := by
 variable {n : ℕ} {m : ℕ} [hm : NeZero m] (v : Fin m → EuclideanSpace ℝ (Fin n))
   (hv₁ : ∃ i : Fin m, v i ≠ 0) (hv₂ : ∑ i : Fin m, v i = 0)
 
-abbrev sum_indicies (s : Finset (Fin m)) : EuclideanSpace ℝ (Fin n) := ∑ i in s, v i
-
 /--
   All possible combinations of indicies that contain 0
 -/
@@ -31,7 +29,7 @@ lemma possible_indicies_nonempty : (possible_indicies (hm := hm)).Nonempty := by
   aesop
 
 noncomputable def maximal_indicies_aux : Option (Finset (Fin m)) :=
-  possible_indicies.toList.argmax (‖sum_indicies v ·‖)
+  possible_indicies.toList.argmax (‖∑ i in ·, v i‖)
 
 lemma maximal_indicies_aux_isSome : (maximal_indicies_aux v).isSome = true := by
   by_contra h
@@ -53,15 +51,15 @@ lemma zero_mem_maximal_indicies : 0 ∈ maximal_indicies v := by
   aesop
 
 noncomputable def maximal_vector : EuclideanSpace ℝ (Fin n) :=
-  sum_indicies v (maximal_indicies v)
+  ∑ i in (maximal_indicies v), v i
 
 noncomputable def maximal_vector_spec (s : Finset (Fin m)) (h : 0 ∈ s)
-  : ‖sum_indicies v s‖ ≤ ‖maximal_vector v‖ := by
+  : ‖∑ i in s, v i‖ ≤ ‖maximal_vector v‖ := by
   have : s ∈ possible_indicies := by
     unfold possible_indicies
     aesop
   unfold maximal_vector
-  apply List.le_of_mem_argmax (f := (‖sum_indicies v ·‖))
+  apply List.le_of_mem_argmax (f := (‖∑ i in ·, v i‖))
   · change s ∈ possible_indicies.toList
     aesop
   · exact maximal_indicies_mem_aux v
@@ -74,9 +72,8 @@ lemma maximal_vector_pos : 0 < ‖maximal_vector v‖ := by
   · apply lt_of_lt_of_le _ (maximal_vector_spec v {0} (Finset.mem_singleton_self 0))
     aesop
 
-lemma maximal_vector_sum_compl : maximal_vector v + sum_indicies v (maximal_indicies v)ᶜ = 0 := by
+lemma maximal_vector_sum_compl : maximal_vector v + ∑ i in (maximal_indicies v)ᶜ, v i = 0 := by
   unfold maximal_vector
-  unfold sum_indicies
   rwa [add_comm, Finset.sum_compl_add_sum]
 
 lemma same_direction_as_maximal_vector (i : Fin m) (hi₁ : i ∈ maximal_indicies v) (hi₂ : i ≠ 0)
@@ -89,7 +86,6 @@ lemma same_direction_as_maximal_vector (i : Fin m) (hi₁ : i ∈ maximal_indici
     exact mul_neg_of_pos_of_neg (div_pos one_pos (maximal_vector_pos v hv₁)) h
   have := maximal_vector_spec v ((maximal_indicies v).erase i)
   specialize this (Finset.mem_erase.mpr ⟨hi₂.symm, zero_mem_maximal_indicies v⟩)
-  unfold sum_indicies at this
   rw [Finset.sum_erase_eq_sub hi₁] at this
   change ‖maximal_vector v - v i‖ ≤ ‖maximal_vector v‖ at this
   apply not_lt.mpr this
@@ -111,11 +107,9 @@ lemma v0_same_direction_as_maximal_vector : (0 : ℝ) ≤ ⟪v 0, maximal_vector
     rw [norm_smul, norm_neg, norm_inv, norm_norm]
     exact inv_mul_cancel (by aesop)
   have : ‖maximal_vector v‖⁻¹ * ⟪v 0, maximal_vector v⟫_ℝ < 0 := mul_neg_of_pos_of_neg (by aesop) h
-  have : v 0 - maximal_vector v = sum_indicies v ({0} ∪ (maximal_indicies v)ᶜ) := by
-    unfold sum_indicies
+  have : v 0 - maximal_vector v = ∑ i in ({0} ∪ (maximal_indicies v)ᶜ), v i := by
     rw [←Finset.insert_eq, Finset.sum_insert (Finset.not_mem_compl.mpr (zero_mem_maximal_indicies v))]
     have := maximal_vector_sum_compl v hv₂
-    unfold sum_indicies at this
     rw [←eq_neg_iff_add_eq_zero] at this
     simp [this]
   calc ‖maximal_vector v‖ < ‖maximal_vector v‖ - ‖maximal_vector v‖⁻¹ * ⟪v 0, maximal_vector v⟫_ℝ := by linarith
@@ -124,9 +118,9 @@ lemma v0_same_direction_as_maximal_vector : (0 : ℝ) ≤ ⟪v 0, maximal_vector
       rw [real_inner_smul_left, inner_sub_right]
       rw [real_inner_self_eq_norm_sq]
       rw [mul_sub, neg_sub, sq, ←mul_assoc, inv_mul_mul_self, real_inner_comm]
-    _ = ⟪‖maximal_vector v‖⁻¹ • (- maximal_vector v), sum_indicies v ({0} ∪ (maximal_indicies v)ᶜ)⟫_ℝ := by rw [this]
-    _ ≤ ‖‖maximal_vector v‖⁻¹ • (- maximal_vector v)‖ * ‖sum_indicies v ({0} ∪ (maximal_indicies v)ᶜ)‖ := real_inner_le_norm _ _
-    _ ≤ ‖sum_indicies v ({0} ∪ (maximal_indicies v)ᶜ)‖ := by simp_all
+    _ = ⟪‖maximal_vector v‖⁻¹ • (- maximal_vector v), ∑ i in ({0} ∪ (maximal_indicies v)ᶜ), v i⟫_ℝ := by rw [this]
+    _ ≤ ‖‖maximal_vector v‖⁻¹ • (- maximal_vector v)‖ * ‖∑ i in ({0} ∪ (maximal_indicies v)ᶜ), v i‖ := real_inner_le_norm _ _
+    _ ≤ ‖∑ i in ({0} ∪ (maximal_indicies v)ᶜ), v i‖ := by simp_all
 
 theorem polygonal_confinement_theorem
   (hv₁ : ∑ i : Fin m, v i = 0) (hv₂ : ∀ i : Fin m, ‖v i‖ ≤ 1) :
