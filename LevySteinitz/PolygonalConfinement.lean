@@ -24,7 +24,7 @@ theorem linear_polygonal_confinement_theorem {m : ℕ} (hm : 0 < m) (v : Fin m �
 -/
 
 variable {n : ℕ} {m : ℕ} [hm : NeZero m] (v : Fin m → EuclideanSpace ℝ (Fin n))
-  (hv₁ : ∃ i : Fin m, v i ≠ 0)
+  (hv₁ : ∃ i : Fin m, v i ≠ 0) (hv₂ : ∑ i : Fin m, v i = 0)
 
 abbrev sum_indicies (s : Finset (Fin m)) : EuclideanSpace ℝ (Fin n) := ∑ i in s, v i
 
@@ -52,6 +52,10 @@ lemma maximal_indicies_aux_isSome : (maximal_indicies_aux v).isSome = true := by
 
 noncomputable def maximal_indicies : Finset (Fin m) :=
   Option.get (maximal_indicies_aux v) (maximal_indicies_aux_isSome v)
+
+lemma maximal_indicies_sum_compl : sum_indicies v (maximal_indicies v) + sum_indicies v (maximal_indicies v)ᶜ = 0 := by
+  unfold sum_indicies
+  rwa [add_comm, Finset.sum_compl_add_sum]
 
 lemma maximal_indicies_mem_aux : maximal_indicies v ∈ maximal_indicies_aux v :=
   Option.get_mem (maximal_indicies_aux_isSome v)
