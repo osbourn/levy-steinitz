@@ -14,15 +14,6 @@ lemma polygonalConstantOne : polygonalConstant 1 = 1 := by
   unfold polygonalConstant
   norm_num
 
-/-
-variable {m : ℕ} (hm : 0 < m) (v : Fin m → ℝ)
-
-theorem linear_polygonal_confinement_theorem {m : ℕ} (hm : 0 < m) (v : Fin m → ℝ)
-  (hv₁ : ∑ i : Fin m, v i = 0) (hv₂ : ∀ i : Fin m, ‖v i‖ ≤ 1) :
-  ∃ P : Equiv.Perm (Fin m), P ⟨0, hm⟩ = ⟨0, hm⟩ ∧
-  ∀ j : Fin m, ‖∑ i in Finset.Iic j, v i‖ ≤ 1 := sorry
--/
-
 variable {n : ℕ} {m : ℕ} [hm : NeZero m] (v : Fin m → EuclideanSpace ℝ (Fin n))
   (hv₁ : ∃ i : Fin m, v i ≠ 0) (hv₂ : ∑ i : Fin m, v i = 0)
 
