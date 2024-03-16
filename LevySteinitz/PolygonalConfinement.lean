@@ -76,7 +76,7 @@ lemma maximal_vector_sum_compl : maximal_vector v + ∑ i in (maximal_indicies v
   unfold maximal_vector
   rwa [add_comm, Finset.sum_compl_add_sum]
 
-lemma same_direction_as_maximal_vector (i : Fin m) (hi₁ : i ∈ maximal_indicies v) (hi₂ : i ≠ 0)
+private lemma same_direction_as_maximal_vector' (i : Fin m) (hi₁ : i ∈ maximal_indicies v) (hi₂ : i ≠ 0)
   : (0 : ℝ) ≤ ⟪v i, maximal_vector v⟫_ℝ := by
   by_contra! h
   have : ‖(1 / ‖maximal_vector v‖) • (maximal_vector v)‖ = (1 : ℝ) := by
@@ -99,7 +99,7 @@ lemma same_direction_as_maximal_vector (i : Fin m) (hi₁ : i ∈ maximal_indici
     _ = ‖maximal_vector v‖ - (1 / ‖maximal_vector v‖) * ⟪v i, maximal_vector v⟫_ℝ := by rw [inner_smul_right]
     _ > ‖maximal_vector v‖ := by linarith
 
-lemma v0_same_direction_as_maximal_vector : (0 : ℝ) ≤ ⟪v 0, maximal_vector v⟫_ℝ := by
+private lemma v0_same_direction_as_maximal_vector : (0 : ℝ) ≤ ⟪v 0, maximal_vector v⟫_ℝ := by
   by_contra! h
   apply not_lt.mpr (maximal_vector_spec v ({0} ∪ (maximal_indicies v)ᶜ) (by aesop))
   have : ‖‖maximal_vector v‖⁻¹ • (- maximal_vector v)‖ = (1 : ℝ) := by
@@ -120,6 +120,13 @@ lemma v0_same_direction_as_maximal_vector : (0 : ℝ) ≤ ⟪v 0, maximal_vector
     _ = ⟪‖maximal_vector v‖⁻¹ • (- maximal_vector v), ∑ i in ({0} ∪ (maximal_indicies v)ᶜ), v i⟫_ℝ := by rw [this]
     _ ≤ ‖‖maximal_vector v‖⁻¹ • (- maximal_vector v)‖ * ‖∑ i in ({0} ∪ (maximal_indicies v)ᶜ), v i‖ := real_inner_le_norm _ _
     _ ≤ ‖∑ i in ({0} ∪ (maximal_indicies v)ᶜ), v i‖ := by simp_all
+
+lemma same_direction_as_maximal_vector (i : Fin m) (h : i ∈ maximal_indicies v)
+  : (0 : ℝ) ≤ ⟪v i, maximal_vector v⟫_ℝ := by
+  by_cases h₁ : i = 0
+  · rw [h₁]
+    exact v0_same_direction_as_maximal_vector v hv₁ hv₂
+  · exact same_direction_as_maximal_vector' v hv₁ i h h₁
 
 theorem polygonal_confinement_theorem
   (hv₁ : ∑ i : Fin m, v i = 0) (hv₂ : ∀ i : Fin m, ‖v i‖ ≤ 1) :
