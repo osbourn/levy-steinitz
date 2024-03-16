@@ -78,8 +78,7 @@ lemma maximal_vector_sum_compl : maximal_vector v + ∑ i in (maximal_indicies v
 
 lemma same_direction_as_maximal_vector (i : Fin m) (hi₁ : i ∈ maximal_indicies v) (hi₂ : i ≠ 0)
   : (0 : ℝ) ≤ ⟪v i, maximal_vector v⟫_ℝ := by
-  by_contra h
-  push_neg at h
+  by_contra! h
   have : ‖(1 / ‖maximal_vector v‖) • (maximal_vector v)‖ = (1 : ℝ) := by
     simp [norm_smul, inv_mul_cancel (maximal_vector_pos v hv₁).ne.symm]
   have : (1 / ‖maximal_vector v‖) * ⟪v i, maximal_vector v⟫_ℝ < 0 := by
