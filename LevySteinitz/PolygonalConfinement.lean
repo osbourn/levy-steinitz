@@ -74,6 +74,9 @@ lemma maximal_vector_pos : 0 < ‖maximal_vector v‖ := by
   · apply lt_of_lt_of_le _ (maximal_vector_spec v {0} (Finset.mem_singleton_self 0))
     aesop
 
+lemma maximal_vector_ne_zero : maximal_vector v ≠ 0 :=
+  norm_ne_zero_iff.mp (maximal_vector_pos v hv₁).ne.symm
+
 lemma maximal_vector_sum_compl : maximal_vector v + ∑ i in (maximal_indicies v)ᶜ, v i = 0 := by
   unfold maximal_vector
   rwa [add_comm, Finset.sum_compl_add_sum]
@@ -153,6 +156,20 @@ section induction_lemmas
 
 variable {n m : ℕ} [hm : NeZero m] (v : Fin m → EuclideanSpace ℝ (Fin (n + 1)))
   (hv₁ : ∑ i : Fin m, v i = 0) (hv₂ : ∀ i : Fin m, ‖v i‖ ≤ 1) (hv₃ : ∃ i : Fin m, v i ≠ 0)
+
+/--
+Orthogonal complement of L. This is an n-dimensional space.
+-/
+noncomputable def orthogonal_maximal : Submodule ℝ (EuclideanSpace ℝ (Fin (n + 1))) :=
+  (Submodule.span _ {maximal_vector v})ᗮ
+
+lemma orthogonal_maximal_finiteDimensional : FiniteDimensional ℝ (orthogonal_maximal v) :=
+  FiniteDimensional.finiteDimensional_submodule (orthogonal_maximal v)
+
+lemma orthogonal_maximal_rank : FiniteDimensional.finrank ℝ (orthogonal_maximal v) = n := by
+  have : Fact (FiniteDimensional.finrank ℝ (EuclideanSpace ℝ (Fin (n + 1))) = n + 1) :=
+    Fact.mk (finrank_euclideanSpace_fin)
+  exact finrank_orthogonal_span_singleton (maximal_vector_ne_zero v hv₃)
 
 end induction_lemmas
 
