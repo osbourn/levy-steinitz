@@ -151,7 +151,7 @@ end maximal_vector_lemmas
 
 section induction_lemmas
 
-variable {n m : ℕ} [hm : NeZero m] (v : Fin m → EuclideanSpace ℝ (Fin n))
+variable {n m : ℕ} [hm : NeZero m] (v : Fin m → EuclideanSpace ℝ (Fin (n + 1)))
   (hv₁ : ∑ i : Fin m, v i = 0) (hv₂ : ∀ i : Fin m, ‖v i‖ ≤ 1) (hv₃ : ∃ i : Fin m, v i ≠ 0)
 
 end induction_lemmas
