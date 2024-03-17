@@ -128,6 +128,23 @@ lemma same_direction_as_maximal_vector (i : Fin m) (h : i ∈ maximal_indicies v
     exact v0_same_direction_as_maximal_vector v hv₁ hv₂
   · exact same_direction_as_maximal_vector' v hv₁ i h h₁
 
+lemma opposite_direction_as_maximal_vector (i : Fin m) (h : i ∉ maximal_indicies v)
+  : ⟪v i, maximal_vector v⟫_ℝ ≤ (0 : ℝ) := by
+  by_contra! h₁
+  apply not_lt.mpr (maximal_vector_spec v ({i} ∪ maximal_indicies v)
+    (Finset.mem_union_right _ (zero_mem_maximal_indicies v)))
+  calc ‖maximal_vector v‖ < ‖maximal_vector v‖ + ‖maximal_vector v‖⁻¹ * ⟪v i, maximal_vector v⟫_ℝ := by
+        aesop
+      _ = ⟪maximal_vector v + v i, ‖maximal_vector v‖⁻¹ • maximal_vector v⟫_ℝ := by
+        rw [inner_smul_right, inner_add_left, real_inner_self_eq_norm_sq, mul_add]
+        rw [sq, ←mul_assoc, inv_mul_mul_self]
+      _ ≤ ‖maximal_vector v + v i‖ * ‖‖maximal_vector v‖⁻¹ • maximal_vector v‖ := real_inner_le_norm _ _
+      _ = ‖maximal_vector v + v i‖ := by
+        rw [norm_smul, norm_inv, norm_norm, inv_mul_cancel (by aesop), mul_one]
+      _ = ‖∑ j in {i} ∪ maximal_indicies v, v j‖ := by
+        rw [←Finset.insert_eq, Finset.sum_insert h, add_comm]
+        rfl
+
 theorem polygonal_confinement_theorem
   (hv₁ : ∑ i : Fin m, v i = 0) (hv₂ : ∀ i : Fin m, ‖v i‖ ≤ 1) :
   ∃ P : Equiv.Perm (Fin m), P 0 = 0 ∧
