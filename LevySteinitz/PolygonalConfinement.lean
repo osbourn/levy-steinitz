@@ -171,6 +171,11 @@ lemma orthogonal_maximal_rank : FiniteDimensional.finrank ℝ (orthogonal_maxima
     Fact.mk (finrank_euclideanSpace_fin)
   exact finrank_orthogonal_span_singleton (maximal_vector_ne_zero v hv₃)
 
+@[irreducible]
+noncomputable def orthogonal_maximal_orthonormalBasis : OrthonormalBasis (Fin n) ℝ (orthogonal_maximal v) := by
+  have := stdOrthonormalBasis ℝ (orthogonal_maximal v)
+  rwa [orthogonal_maximal_rank v hv₃] at this
+
 end induction_lemmas
 
 theorem polygonal_confinement_theorem {n m : ℕ} [hm : NeZero m]
