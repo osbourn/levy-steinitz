@@ -14,6 +14,8 @@ lemma polygonalConstantOne : polygonalConstant 1 = 1 := by
   unfold polygonalConstant
   norm_num
 
+section maximal_vector_lemmas
+
 variable {n : ℕ} {m : ℕ} [hm : NeZero m] (v : Fin m → EuclideanSpace ℝ (Fin n))
   (hv₁ : ∃ i : Fin m, v i ≠ 0) (hv₂ : ∑ i : Fin m, v i = 0)
 
@@ -145,7 +147,17 @@ lemma opposite_direction_as_maximal_vector (i : Fin m) (h : i ∉ maximal_indici
         rw [←Finset.insert_eq, Finset.sum_insert h, add_comm]
         rfl
 
-theorem polygonal_confinement_theorem
+end maximal_vector_lemmas
+
+section induction_lemmas
+
+variable {n m : ℕ} [hm : NeZero m] (v : Fin m → EuclideanSpace ℝ (Fin n))
+  (hv₁ : ∑ i : Fin m, v i = 0) (hv₂ : ∀ i : Fin m, ‖v i‖ ≤ 1) (hv₃ : ∃ i : Fin m, v i ≠ 0)
+
+end induction_lemmas
+
+theorem polygonal_confinement_theorem {n m : ℕ} [hm : NeZero m]
+  {v : Fin m → EuclideanSpace ℝ (Fin n)}
   (hv₁ : ∑ i : Fin m, v i = 0) (hv₂ : ∀ i : Fin m, ‖v i‖ ≤ 1) :
   ∃ P : Equiv.Perm (Fin m), P 0 = 0 ∧
   ∀ j : Fin m, ‖∑ i in Finset.Iic j, v i‖ ≤ polygonalConstant n := sorry
