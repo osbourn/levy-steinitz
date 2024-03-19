@@ -188,9 +188,14 @@ lemma maximal_projection_def (w : EuclideanSpace ℝ (Fin (n + 1)))
   orthogonalProjection_singleton ℝ w
 
 lemma orthogonal_maximal_projection_def (w : EuclideanSpace ℝ (Fin (n + 1)))
-  : orthogonal_maximal_projection v w = w - (⟪maximal_vector v, w⟫_ℝ / ↑(‖maximal_vector v‖ ^ 2)) • (maximal_vector v) := by
-  rw [←maximal_projection_def v]
+  : orthogonal_maximal_projection v w = w - maximal_projection v w := by
   exact orthogonalProjection_orthogonal_val w
+
+lemma maximal_projection_add_orthgonal_maximal_projection (w : EuclideanSpace ℝ (Fin (n + 1)))
+  : (maximal_projection v w : EuclideanSpace ℝ (Fin (n + 1)))
+    + orthogonal_maximal_projection v w = w := by
+  rw [orthogonal_maximal_projection_def]
+  simp
 
 end induction_lemmas
 
