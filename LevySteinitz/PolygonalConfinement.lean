@@ -161,7 +161,7 @@ variable {n m : ℕ} [hm : NeZero m] (v : Fin m → EuclideanSpace ℝ (Fin (n +
 Orthogonal complement of L. This is an n-dimensional space.
 -/
 noncomputable def orthogonal_maximal : Submodule ℝ (EuclideanSpace ℝ (Fin (n + 1))) :=
-  (Submodule.span _ {maximal_vector v})ᗮ
+  (Submodule.span ℝ {maximal_vector v})ᗮ
 
 lemma orthogonal_maximal_finiteDimensional : FiniteDimensional ℝ (orthogonal_maximal v) :=
   FiniteDimensional.finiteDimensional_submodule (orthogonal_maximal v)
@@ -196,6 +196,15 @@ lemma maximal_projection_add_orthgonal_maximal_projection (w : EuclideanSpace �
     + orthogonal_maximal_projection v w = w := by
   rw [orthogonal_maximal_projection_def]
   simp
+
+noncomputable def v' : Fin m → ↥(orthogonal_maximal v) :=
+  orthogonal_maximal_projection v ∘ v
+
+noncomputable def v_proj : Fin m → ↥(Submodule.span ℝ {maximal_vector v}) :=
+  maximal_projection v ∘ v
+
+noncomputable def v'_repr : Fin m → EuclideanSpace ℝ (Fin n) :=
+  (orthogonal_maximal_orthonormalBasis v hv₃).repr ∘ (v' v)
 
 end induction_lemmas
 
