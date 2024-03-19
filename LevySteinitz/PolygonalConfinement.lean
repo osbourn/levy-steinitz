@@ -192,14 +192,11 @@ lemma L_projection_add_L_perp_maximal_projection (w : EuclideanSpace ℝ (Fin (n
   rw [L_perp_projection_def]
   simp
 
-noncomputable def v' : Fin m → ↥L_perp :=
-  orthogonalProjection L_perp ∘ v
+local notation "v'" => orthogonalProjection L_perp ∘ v
 
-noncomputable def v_proj : Fin m → ↥(Submodule.span ℝ {L}) :=
-  orthogonalProjection L_span ∘ v
+local notation "v_proj" => orthogonalProjection L_span ∘ v
 
-noncomputable def v'_repr : Fin m → EuclideanSpace ℝ (Fin n) :=
-  (L_perp_orthonormalBasis v hv₃).repr ∘ (v' v)
+local notation "v'_repr" => (OrthonormalBasis.repr (L_perp_orthonormalBasis v hv₃)) ∘ v'
 
 end induction_lemmas
 
