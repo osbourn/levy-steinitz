@@ -86,7 +86,7 @@ lemma maximal_vector_sum_compl : L + ∑ i in (maximal_indicies v)ᶜ, v i = 0 :
 private lemma same_direction_as_maximal_vector' (i : Fin m) (hi₁ : i ∈ maximal_indicies v) (hi₂ : i ≠ 0)
   : (0 : ℝ) ≤ ⟪v i, L⟫_ℝ := by
   by_contra! h
-  have : ‖(1 / ‖L‖) • (L)‖ = (1 : ℝ) := by
+  have : ‖(1 / ‖L‖) • L‖ = (1 : ℝ) := by
     simp [norm_smul, inv_mul_cancel (maximal_vector_pos v hv₁).ne.symm]
   have : (1 / ‖L‖) * ⟪v i, L⟫_ℝ < 0 := by
     exact mul_neg_of_pos_of_neg (div_pos one_pos (maximal_vector_pos v hv₁)) h
@@ -95,14 +95,14 @@ private lemma same_direction_as_maximal_vector' (i : Fin m) (hi₁ : i ∈ maxim
   rw [Finset.sum_erase_eq_sub hi₁] at this
   change ‖L - v i‖ ≤ ‖L‖ at this
   apply not_lt.mpr this
-  calc ‖L - v i‖ ≥ ‖L - v i‖ * ‖(1 / ‖L‖) • (L)‖ := by simp_all
-    _ ≥ ⟪L - v i, (1 / ‖L‖) • (L)⟫_ℝ := by
-        exact real_inner_le_norm (L - v i) ((1 / ‖L‖) • (L))
-    _ = ⟪L, (1 / ‖L‖) • (L)⟫_ℝ - ⟪v i, (1 / ‖L‖) • (L)⟫_ℝ := inner_sub_left _ _ _
-    _ = (1 / ‖L‖) * ⟪L, L⟫_ℝ - ⟪v i, (1 / ‖L‖) • (L)⟫_ℝ := by rw [inner_smul_right]
-    _ = (1 / ‖L‖) * (‖L‖ * ‖L‖) - ⟪v i, (1 / ‖L‖) • (L)⟫_ℝ := by rw [real_inner_self_eq_norm_mul_norm]
-    _ = (1 / ‖L‖ * ‖L‖) * ‖L‖ - ⟪v i, (1 / ‖L‖) • (L)⟫_ℝ := by rw [mul_assoc]
-    _ = ‖L‖ - ⟪v i, (1 / ‖L‖) • (L)⟫_ℝ := by simp
+  calc ‖L - v i‖ ≥ ‖L - v i‖ * ‖(1 / ‖L‖) • L‖ := by simp_all
+    _ ≥ ⟪L - v i, (1 / ‖L‖) • L⟫_ℝ := by
+        exact real_inner_le_norm (L - v i) ((1 / ‖L‖) • L)
+    _ = ⟪L, (1 / ‖L‖) • L⟫_ℝ - ⟪v i, (1 / ‖L‖) • L⟫_ℝ := inner_sub_left _ _ _
+    _ = (1 / ‖L‖) * ⟪L, L⟫_ℝ - ⟪v i, (1 / ‖L‖) • L⟫_ℝ := by rw [inner_smul_right]
+    _ = (1 / ‖L‖) * (‖L‖ * ‖L‖) - ⟪v i, (1 / ‖L‖) • L⟫_ℝ := by rw [real_inner_self_eq_norm_mul_norm]
+    _ = (1 / ‖L‖ * ‖L‖) * ‖L‖ - ⟪v i, (1 / ‖L‖) • L⟫_ℝ := by rw [mul_assoc]
+    _ = ‖L‖ - ⟪v i, (1 / ‖L‖) • L⟫_ℝ := by simp
     _ = ‖L‖ - (1 / ‖L‖) * ⟪v i, L⟫_ℝ := by rw [inner_smul_right]
     _ > ‖L‖ := by linarith
 
@@ -179,7 +179,7 @@ noncomputable def L_perp_orthonormalBasis : OrthonormalBasis (Fin n) ℝ L_perp 
   rwa [L_perp_rank v hv₃] at this
 
 lemma L_projection_def (w : EuclideanSpace ℝ (Fin (n + 1)))
-  : orthogonalProjection L_span w = (⟪L, w⟫_ℝ / ↑(‖L‖ ^ 2)) • (L) :=
+  : orthogonalProjection L_span w = (⟪L, w⟫_ℝ / ↑(‖L‖ ^ 2)) • L :=
   orthogonalProjection_singleton ℝ w
 
 lemma L_perp_projection_def (w : EuclideanSpace ℝ (Fin (n + 1)))
