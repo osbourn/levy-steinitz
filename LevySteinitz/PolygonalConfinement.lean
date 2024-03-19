@@ -176,6 +176,22 @@ noncomputable def orthogonal_maximal_orthonormalBasis : OrthonormalBasis (Fin n)
   have := stdOrthonormalBasis ℝ (orthogonal_maximal v)
   rwa [orthogonal_maximal_rank v hv₃] at this
 
+noncomputable abbrev orthogonal_maximal_projection
+  : EuclideanSpace ℝ (Fin (n + 1)) →L[ℝ] ↥(orthogonal_maximal v) :=
+  orthogonalProjection (orthogonal_maximal v)
+
+noncomputable abbrev maximal_projection : EuclideanSpace ℝ (Fin (n + 1)) →L[ℝ] (Submodule.span ℝ {maximal_vector v}) :=
+  orthogonalProjection (Submodule.span ℝ {maximal_vector v})
+
+lemma maximal_projection_def (w : EuclideanSpace ℝ (Fin (n + 1)))
+  : maximal_projection v w = (⟪maximal_vector v, w⟫_ℝ / ↑(‖maximal_vector v‖ ^ 2)) • (maximal_vector v) :=
+  orthogonalProjection_singleton ℝ w
+
+lemma orthogonal_maximal_projection_def (w : EuclideanSpace ℝ (Fin (n + 1)))
+  : orthogonal_maximal_projection v w = w - (⟪maximal_vector v, w⟫_ℝ / ↑(‖maximal_vector v‖ ^ 2)) • (maximal_vector v) := by
+  rw [←maximal_projection_def v]
+  exact orthogonalProjection_orthogonal_val w
+
 end induction_lemmas
 
 theorem polygonal_confinement_theorem {n m : ℕ} [hm : NeZero m]
