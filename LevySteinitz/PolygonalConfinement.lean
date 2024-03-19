@@ -161,6 +161,8 @@ variable {n m : ℕ} [hm : NeZero m] (v : Fin m → EuclideanSpace ℝ (Fin (n +
 
 local notation "L" => maximal_vector v
 
+local notation "L_span" => (Submodule.span ℝ {L})
+
 local notation "L_perp" => (Submodule.span ℝ {L})ᗮ
 
 lemma L_perp_finiteDimensional : FiniteDimensional ℝ L_perp :=
@@ -176,32 +178,25 @@ noncomputable def L_perp_orthonormalBasis : OrthonormalBasis (Fin n) ℝ L_perp 
   have := stdOrthonormalBasis ℝ L_perp
   rwa [L_perp_rank v hv₃] at this
 
-noncomputable abbrev L_perp_projection
-  : EuclideanSpace ℝ (Fin (n + 1)) →L[ℝ] ↥L_perp :=
-  orthogonalProjection L_perp
-
-noncomputable abbrev L_projection : EuclideanSpace ℝ (Fin (n + 1)) →L[ℝ] (Submodule.span ℝ {L}) :=
-  orthogonalProjection (Submodule.span ℝ {L})
-
 lemma L_projection_def (w : EuclideanSpace ℝ (Fin (n + 1)))
-  : L_projection v w = (⟪L, w⟫_ℝ / ↑(‖L‖ ^ 2)) • (L) :=
+  : orthogonalProjection L_span w = (⟪L, w⟫_ℝ / ↑(‖L‖ ^ 2)) • (L) :=
   orthogonalProjection_singleton ℝ w
 
 lemma L_perp_projection_def (w : EuclideanSpace ℝ (Fin (n + 1)))
-  : L_perp_projection v w = w - L_projection v w := by
+  : (orthogonalProjection L_perp) w = w - orthogonalProjection L_span w := by
   exact orthogonalProjection_orthogonal_val w
 
 lemma L_projection_add_L_perp_maximal_projection (w : EuclideanSpace ℝ (Fin (n + 1)))
-  : (L_projection v w : EuclideanSpace ℝ (Fin (n + 1)))
-    + L_perp_projection v w = w := by
+  : (orthogonalProjection L_span w : EuclideanSpace ℝ (Fin (n + 1)))
+    + orthogonalProjection L_perp w = w := by
   rw [L_perp_projection_def]
   simp
 
 noncomputable def v' : Fin m → ↥L_perp :=
-  L_perp_projection v ∘ v
+  orthogonalProjection L_perp ∘ v
 
 noncomputable def v_proj : Fin m → ↥(Submodule.span ℝ {L}) :=
-  L_projection v ∘ v
+  orthogonalProjection L_span ∘ v
 
 noncomputable def v'_repr : Fin m → EuclideanSpace ℝ (Fin n) :=
   (L_perp_orthonormalBasis v hv₃).repr ∘ (v' v)
