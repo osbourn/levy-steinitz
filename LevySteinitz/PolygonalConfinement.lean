@@ -55,8 +55,10 @@ lemma zero_mem_maximal_indicies : 0 ∈ maximal_indicies v := by
 noncomputable def maximal_vector : EuclideanSpace ℝ (Fin n) :=
   ∑ i in (maximal_indicies v), v i
 
+local notation "L" => maximal_vector v
+
 noncomputable def maximal_vector_spec (s : Finset (Fin m)) (h : 0 ∈ s)
-  : ‖∑ i in s, v i‖ ≤ ‖maximal_vector v‖ := by
+  : ‖∑ i in s, v i‖ ≤ ‖L‖ := by
   have : s ∈ possible_indicies := by
     unfold possible_indicies
     aesop
@@ -66,7 +68,7 @@ noncomputable def maximal_vector_spec (s : Finset (Fin m)) (h : 0 ∈ s)
     aesop
   · exact maximal_indicies_mem_aux v
 
-lemma maximal_vector_pos : 0 < ‖maximal_vector v‖ := by
+lemma maximal_vector_pos : 0 < ‖L‖ := by
   by_cases h : v 0 = 0
   · have ⟨i, hi⟩ := hv₁
     apply lt_of_lt_of_le _ (maximal_vector_spec v {0, i} (Finset.mem_insert.mpr (Or.inl rfl)))
@@ -74,77 +76,77 @@ lemma maximal_vector_pos : 0 < ‖maximal_vector v‖ := by
   · apply lt_of_lt_of_le _ (maximal_vector_spec v {0} (Finset.mem_singleton_self 0))
     aesop
 
-lemma maximal_vector_ne_zero : maximal_vector v ≠ 0 :=
+lemma maximal_vector_ne_zero : L ≠ 0 :=
   norm_ne_zero_iff.mp (maximal_vector_pos v hv₁).ne.symm
 
-lemma maximal_vector_sum_compl : maximal_vector v + ∑ i in (maximal_indicies v)ᶜ, v i = 0 := by
+lemma maximal_vector_sum_compl : L + ∑ i in (maximal_indicies v)ᶜ, v i = 0 := by
   unfold maximal_vector
   rwa [add_comm, Finset.sum_compl_add_sum]
 
 private lemma same_direction_as_maximal_vector' (i : Fin m) (hi₁ : i ∈ maximal_indicies v) (hi₂ : i ≠ 0)
-  : (0 : ℝ) ≤ ⟪v i, maximal_vector v⟫_ℝ := by
+  : (0 : ℝ) ≤ ⟪v i, L⟫_ℝ := by
   by_contra! h
-  have : ‖(1 / ‖maximal_vector v‖) • (maximal_vector v)‖ = (1 : ℝ) := by
+  have : ‖(1 / ‖L‖) • (L)‖ = (1 : ℝ) := by
     simp [norm_smul, inv_mul_cancel (maximal_vector_pos v hv₁).ne.symm]
-  have : (1 / ‖maximal_vector v‖) * ⟪v i, maximal_vector v⟫_ℝ < 0 := by
+  have : (1 / ‖L‖) * ⟪v i, L⟫_ℝ < 0 := by
     exact mul_neg_of_pos_of_neg (div_pos one_pos (maximal_vector_pos v hv₁)) h
   have := maximal_vector_spec v ((maximal_indicies v).erase i)
   specialize this (Finset.mem_erase.mpr ⟨hi₂.symm, zero_mem_maximal_indicies v⟩)
   rw [Finset.sum_erase_eq_sub hi₁] at this
-  change ‖maximal_vector v - v i‖ ≤ ‖maximal_vector v‖ at this
+  change ‖L - v i‖ ≤ ‖L‖ at this
   apply not_lt.mpr this
-  calc ‖maximal_vector v - v i‖ ≥ ‖maximal_vector v - v i‖ * ‖(1 / ‖maximal_vector v‖) • (maximal_vector v)‖ := by simp_all
-    _ ≥ ⟪maximal_vector v - v i, (1 / ‖maximal_vector v‖) • (maximal_vector v)⟫_ℝ := by
-        exact real_inner_le_norm (maximal_vector v - v i) ((1 / ‖maximal_vector v‖) • (maximal_vector v))
-    _ = ⟪maximal_vector v, (1 / ‖maximal_vector v‖) • (maximal_vector v)⟫_ℝ - ⟪v i, (1 / ‖maximal_vector v‖) • (maximal_vector v)⟫_ℝ := inner_sub_left _ _ _
-    _ = (1 / ‖maximal_vector v‖) * ⟪maximal_vector v, maximal_vector v⟫_ℝ - ⟪v i, (1 / ‖maximal_vector v‖) • (maximal_vector v)⟫_ℝ := by rw [inner_smul_right]
-    _ = (1 / ‖maximal_vector v‖) * (‖maximal_vector v‖ * ‖maximal_vector v‖) - ⟪v i, (1 / ‖maximal_vector v‖) • (maximal_vector v)⟫_ℝ := by rw [real_inner_self_eq_norm_mul_norm]
-    _ = (1 / ‖maximal_vector v‖ * ‖maximal_vector v‖) * ‖maximal_vector v‖ - ⟪v i, (1 / ‖maximal_vector v‖) • (maximal_vector v)⟫_ℝ := by rw [mul_assoc]
-    _ = ‖maximal_vector v‖ - ⟪v i, (1 / ‖maximal_vector v‖) • (maximal_vector v)⟫_ℝ := by simp
-    _ = ‖maximal_vector v‖ - (1 / ‖maximal_vector v‖) * ⟪v i, maximal_vector v⟫_ℝ := by rw [inner_smul_right]
-    _ > ‖maximal_vector v‖ := by linarith
+  calc ‖L - v i‖ ≥ ‖L - v i‖ * ‖(1 / ‖L‖) • (L)‖ := by simp_all
+    _ ≥ ⟪L - v i, (1 / ‖L‖) • (L)⟫_ℝ := by
+        exact real_inner_le_norm (L - v i) ((1 / ‖L‖) • (L))
+    _ = ⟪L, (1 / ‖L‖) • (L)⟫_ℝ - ⟪v i, (1 / ‖L‖) • (L)⟫_ℝ := inner_sub_left _ _ _
+    _ = (1 / ‖L‖) * ⟪L, L⟫_ℝ - ⟪v i, (1 / ‖L‖) • (L)⟫_ℝ := by rw [inner_smul_right]
+    _ = (1 / ‖L‖) * (‖L‖ * ‖L‖) - ⟪v i, (1 / ‖L‖) • (L)⟫_ℝ := by rw [real_inner_self_eq_norm_mul_norm]
+    _ = (1 / ‖L‖ * ‖L‖) * ‖L‖ - ⟪v i, (1 / ‖L‖) • (L)⟫_ℝ := by rw [mul_assoc]
+    _ = ‖L‖ - ⟪v i, (1 / ‖L‖) • (L)⟫_ℝ := by simp
+    _ = ‖L‖ - (1 / ‖L‖) * ⟪v i, L⟫_ℝ := by rw [inner_smul_right]
+    _ > ‖L‖ := by linarith
 
-private lemma v0_same_direction_as_maximal_vector : (0 : ℝ) ≤ ⟪v 0, maximal_vector v⟫_ℝ := by
+private lemma v0_same_direction_as_maximal_vector : (0 : ℝ) ≤ ⟪v 0, L⟫_ℝ := by
   by_contra! h
   apply not_lt.mpr (maximal_vector_spec v ({0} ∪ (maximal_indicies v)ᶜ) (by aesop))
-  have : ‖‖maximal_vector v‖⁻¹ • (- maximal_vector v)‖ = (1 : ℝ) := by
+  have : ‖‖L‖⁻¹ • (- L)‖ = (1 : ℝ) := by
     rw [norm_smul, norm_neg, norm_inv, norm_norm]
     exact inv_mul_cancel (by aesop)
-  have : ‖maximal_vector v‖⁻¹ * ⟪v 0, maximal_vector v⟫_ℝ < 0 := mul_neg_of_pos_of_neg (by aesop) h
-  have : v 0 - maximal_vector v = ∑ i in ({0} ∪ (maximal_indicies v)ᶜ), v i := by
+  have : ‖L‖⁻¹ * ⟪v 0, L⟫_ℝ < 0 := mul_neg_of_pos_of_neg (by aesop) h
+  have : v 0 - L = ∑ i in ({0} ∪ (maximal_indicies v)ᶜ), v i := by
     rw [←Finset.insert_eq, Finset.sum_insert (Finset.not_mem_compl.mpr (zero_mem_maximal_indicies v))]
     have := maximal_vector_sum_compl v hv₂
     rw [←eq_neg_iff_add_eq_zero] at this
     simp [this]
-  calc ‖maximal_vector v‖ < ‖maximal_vector v‖ - ‖maximal_vector v‖⁻¹ * ⟪v 0, maximal_vector v⟫_ℝ := by linarith
-    _ = ⟪‖maximal_vector v‖⁻¹ • (- maximal_vector v), v 0 - maximal_vector v⟫_ℝ := by
+  calc ‖L‖ < ‖L‖ - ‖L‖⁻¹ * ⟪v 0, L⟫_ℝ := by linarith
+    _ = ⟪‖L‖⁻¹ • (- L), v 0 - L⟫_ℝ := by
       rw [smul_neg, inner_neg_left]
       rw [real_inner_smul_left, inner_sub_right]
       rw [real_inner_self_eq_norm_sq]
       rw [mul_sub, neg_sub, sq, ←mul_assoc, inv_mul_mul_self, real_inner_comm]
-    _ = ⟪‖maximal_vector v‖⁻¹ • (- maximal_vector v), ∑ i in ({0} ∪ (maximal_indicies v)ᶜ), v i⟫_ℝ := by rw [this]
-    _ ≤ ‖‖maximal_vector v‖⁻¹ • (- maximal_vector v)‖ * ‖∑ i in ({0} ∪ (maximal_indicies v)ᶜ), v i‖ := real_inner_le_norm _ _
+    _ = ⟪‖L‖⁻¹ • (- L), ∑ i in ({0} ∪ (maximal_indicies v)ᶜ), v i⟫_ℝ := by rw [this]
+    _ ≤ ‖‖L‖⁻¹ • (- L)‖ * ‖∑ i in ({0} ∪ (maximal_indicies v)ᶜ), v i‖ := real_inner_le_norm _ _
     _ ≤ ‖∑ i in ({0} ∪ (maximal_indicies v)ᶜ), v i‖ := by simp_all
 
 lemma same_direction_as_maximal_vector (i : Fin m) (h : i ∈ maximal_indicies v)
-  : (0 : ℝ) ≤ ⟪v i, maximal_vector v⟫_ℝ := by
+  : (0 : ℝ) ≤ ⟪v i, L⟫_ℝ := by
   by_cases h₁ : i = 0
   · rw [h₁]
     exact v0_same_direction_as_maximal_vector v hv₁ hv₂
   · exact same_direction_as_maximal_vector' v hv₁ i h h₁
 
 lemma opposite_direction_as_maximal_vector (i : Fin m) (h : i ∉ maximal_indicies v)
-  : ⟪v i, maximal_vector v⟫_ℝ ≤ (0 : ℝ) := by
+  : ⟪v i, L⟫_ℝ ≤ (0 : ℝ) := by
   by_contra! h₁
   apply not_lt.mpr (maximal_vector_spec v ({i} ∪ maximal_indicies v)
     (Finset.mem_union_right _ (zero_mem_maximal_indicies v)))
-  calc ‖maximal_vector v‖ < ‖maximal_vector v‖ + ‖maximal_vector v‖⁻¹ * ⟪v i, maximal_vector v⟫_ℝ := by
+  calc ‖L‖ < ‖L‖ + ‖L‖⁻¹ * ⟪v i, L⟫_ℝ := by
         aesop
-      _ = ⟪maximal_vector v + v i, ‖maximal_vector v‖⁻¹ • maximal_vector v⟫_ℝ := by
+      _ = ⟪L + v i, ‖L‖⁻¹ • L⟫_ℝ := by
         rw [inner_smul_right, inner_add_left, real_inner_self_eq_norm_sq, mul_add]
         rw [sq, ←mul_assoc, inv_mul_mul_self]
-      _ ≤ ‖maximal_vector v + v i‖ * ‖‖maximal_vector v‖⁻¹ • maximal_vector v‖ := real_inner_le_norm _ _
-      _ = ‖maximal_vector v + v i‖ := by
+      _ ≤ ‖L + v i‖ * ‖‖L‖⁻¹ • L‖ := real_inner_le_norm _ _
+      _ = ‖L + v i‖ := by
         rw [norm_smul, norm_inv, norm_norm, inv_mul_cancel (by aesop), mul_one]
       _ = ‖∑ j in {i} ∪ maximal_indicies v, v j‖ := by
         rw [←Finset.insert_eq, Finset.sum_insert h, add_comm]
@@ -157,11 +159,13 @@ section induction_lemmas
 variable {n m : ℕ} [hm : NeZero m] (v : Fin m → EuclideanSpace ℝ (Fin (n + 1)))
   (hv₁ : ∑ i : Fin m, v i = 0) (hv₂ : ∀ i : Fin m, ‖v i‖ ≤ 1) (hv₃ : ∃ i : Fin m, v i ≠ 0)
 
+local notation "L" => maximal_vector v
+
 /--
 Orthogonal complement of L. This is an n-dimensional space.
 -/
 noncomputable def orthogonal_maximal : Submodule ℝ (EuclideanSpace ℝ (Fin (n + 1))) :=
-  (Submodule.span ℝ {maximal_vector v})ᗮ
+  (Submodule.span ℝ {L})ᗮ
 
 lemma orthogonal_maximal_finiteDimensional : FiniteDimensional ℝ (orthogonal_maximal v) :=
   FiniteDimensional.finiteDimensional_submodule (orthogonal_maximal v)
@@ -180,11 +184,11 @@ noncomputable abbrev orthogonal_maximal_projection
   : EuclideanSpace ℝ (Fin (n + 1)) →L[ℝ] ↥(orthogonal_maximal v) :=
   orthogonalProjection (orthogonal_maximal v)
 
-noncomputable abbrev maximal_projection : EuclideanSpace ℝ (Fin (n + 1)) →L[ℝ] (Submodule.span ℝ {maximal_vector v}) :=
-  orthogonalProjection (Submodule.span ℝ {maximal_vector v})
+noncomputable abbrev maximal_projection : EuclideanSpace ℝ (Fin (n + 1)) →L[ℝ] (Submodule.span ℝ {L}) :=
+  orthogonalProjection (Submodule.span ℝ {L})
 
 lemma maximal_projection_def (w : EuclideanSpace ℝ (Fin (n + 1)))
-  : maximal_projection v w = (⟪maximal_vector v, w⟫_ℝ / ↑(‖maximal_vector v‖ ^ 2)) • (maximal_vector v) :=
+  : maximal_projection v w = (⟪L, w⟫_ℝ / ↑(‖L‖ ^ 2)) • (L) :=
   orthogonalProjection_singleton ℝ w
 
 lemma orthogonal_maximal_projection_def (w : EuclideanSpace ℝ (Fin (n + 1)))
@@ -200,7 +204,7 @@ lemma maximal_projection_add_orthgonal_maximal_projection (w : EuclideanSpace �
 noncomputable def v' : Fin m → ↥(orthogonal_maximal v) :=
   orthogonal_maximal_projection v ∘ v
 
-noncomputable def v_proj : Fin m → ↥(Submodule.span ℝ {maximal_vector v}) :=
+noncomputable def v_proj : Fin m → ↥(Submodule.span ℝ {L}) :=
   maximal_projection v ∘ v
 
 noncomputable def v'_repr : Fin m → EuclideanSpace ℝ (Fin n) :=
