@@ -215,12 +215,24 @@ lemma v'_sum_maximal : ∑ i in I, v' i = 0 := by
   rw [orthogonalProjection_orthogonalComplement_singleton_eq_zero] at this
   exact this
 
+lemma v'_repr_sum_maximal : ∑ i in I, v'_repr i = 0 := by
+  have := v'_sum_maximal v
+  apply_fun (L_perp_orthonormalBasis v hv₃).repr at this
+  rw [map_sum, map_zero] at this
+  exact this
+
 lemma v'_sum_maximal_compl : ∑ i in Iᶜ, v' i = 0 := by
   have := sum_compl_eq_neg_maximal_vector v hv₁
   apply_fun orthogonalProjection L_perp at this
   rw [map_sum, map_neg] at this
   rw [orthogonalProjection_orthogonalComplement_singleton_eq_zero] at this
   rw [neg_zero] at this
+  exact this
+
+lemma v'_repr_sum_maximal_compl : ∑ i in Iᶜ, v'_repr i = 0 := by
+  have := v'_sum_maximal_compl v hv₁
+  apply_fun (L_perp_orthonormalBasis v hv₃).repr at this
+  rw [map_sum, map_zero] at this
   exact this
 
 local notation "s" => Finset.card I
