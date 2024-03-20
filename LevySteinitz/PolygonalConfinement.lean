@@ -219,6 +219,13 @@ lemma v'_sum_maximal_compl : ∑ i in (maximal_indicies v)ᶜ, v' i = 0 := by
   rw [neg_zero] at this
   exact this
 
+local notation "s" => Finset.card (maximal_indicies v)
+
+local notation "t" => Finset.card ((maximal_indicies v)ᶜ)
+
+lemma s_add_t : s + t = m := by
+  rw [add_comm, Finset.card_compl_add_card, Fintype.card_fin]
+
 end induction_lemmas
 
 theorem polygonal_confinement_theorem {n m : ℕ} [hm : NeZero m]
