@@ -83,6 +83,9 @@ lemma maximal_vector_sum_compl : L + ∑ i in (maximal_indicies v)ᶜ, v i = 0 :
   unfold maximal_vector
   rwa [add_comm, Finset.sum_compl_add_sum]
 
+lemma sum_compl_eq_neg_maximal_vector : ∑ i in (maximal_indicies v)ᶜ, v i = - L :=
+  eq_neg_of_add_eq_zero_right (maximal_vector_sum_compl v hv₂)
+
 private lemma same_direction_as_maximal_vector' (i : Fin m) (hi₁ : i ∈ maximal_indicies v) (hi₂ : i ≠ 0)
   : (0 : ℝ) ≤ ⟪v i, L⟫_ℝ := by
   by_contra! h
@@ -200,6 +203,21 @@ local notation "v'_repr" => (OrthonormalBasis.repr (L_perp_orthonormalBasis v hv
 
 lemma v_proj_add_v' (i : Fin m) : (v_proj i : EuclideanSpace ℝ (Fin (n + 1))) + v' i = v i :=
   L_projection_add_L_perp_projection v (v i)
+
+lemma v'_sum_maximal : ∑ i in maximal_indicies v, v' i = 0 := by
+  have : ∑ i in maximal_indicies v, v i = L := rfl
+  apply_fun orthogonalProjection L_perp at this
+  rw [map_sum] at this
+  rw [orthogonalProjection_orthogonalComplement_singleton_eq_zero] at this
+  exact this
+
+lemma v'_sum_maximal_compl : ∑ i in (maximal_indicies v)ᶜ, v' i = 0 := by
+  have := sum_compl_eq_neg_maximal_vector v hv₁
+  apply_fun orthogonalProjection L_perp at this
+  rw [map_sum, map_neg] at this
+  rw [orthogonalProjection_orthogonalComplement_singleton_eq_zero] at this
+  rw [neg_zero] at this
+  exact this
 
 end induction_lemmas
 
