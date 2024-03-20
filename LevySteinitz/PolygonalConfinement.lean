@@ -239,6 +239,25 @@ local notation "s" => Finset.card I
 
 local notation "t" => Finset.card Iᶜ
 
+local instance : NeZero s := by
+  apply NeZero.mk
+  intro h
+  have : Finset.card I ≠ 0 := (Finset.Nonempty.card_pos ⟨0, zero_mem_maximal_indicies v⟩).ne.symm
+  contradiction
+
+local instance : NeZero t := by
+  apply NeZero.mk
+  intro h
+  rw [Finset.card_eq_zero, Finset.compl_eq_empty_iff] at h
+  rcases hv₃ with ⟨i, hi⟩
+  have L_eq_zero : L = 0 := by rwa [maximal_vector, h]
+  by_cases hi₂ : i = 0
+  · apply not_lt.mpr (maximal_vector_spec v {0} (Finset.mem_singleton_self 0))
+    rwa [L_eq_zero, norm_zero, Finset.sum_singleton, norm_pos_iff, ←hi₂]
+  · apply not_lt.mpr (maximal_vector_spec v (Finset.univ.erase i)
+      (Finset.mem_erase.mpr ⟨(Ne.intro hi₂).symm, Finset.mem_univ 0⟩))
+    simp [L_eq_zero, hv₁, hi]
+
 lemma s_add_t : s + t = m := by
   rw [add_comm, Finset.card_compl_add_card, Fintype.card_fin]
 
