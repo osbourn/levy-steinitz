@@ -44,16 +44,18 @@ lemma maximal_indicies_aux_isSome : (maximal_indicies_aux v).isSome = true := by
 noncomputable def maximal_indicies : Finset (Fin m) :=
   Option.get (maximal_indicies_aux v) (maximal_indicies_aux_isSome v)
 
-lemma maximal_indicies_mem_aux : maximal_indicies v ∈ maximal_indicies_aux v :=
+local notation "I" => maximal_indicies v
+
+lemma maximal_indicies_mem_aux : I ∈ maximal_indicies_aux v :=
   Option.get_mem (maximal_indicies_aux_isSome v)
 
-lemma zero_mem_maximal_indicies : 0 ∈ maximal_indicies v := by
+lemma zero_mem_maximal_indicies : 0 ∈ I := by
   have := List.argmax_mem (maximal_indicies_mem_aux v)
   unfold possible_indicies at this
   aesop
 
 noncomputable def maximal_vector : EuclideanSpace ℝ (Fin n) :=
-  ∑ i in (maximal_indicies v), v i
+  ∑ i in I, v i
 
 local notation "L" => maximal_vector v
 
@@ -79,21 +81,21 @@ lemma maximal_vector_pos : 0 < ‖L‖ := by
 lemma maximal_vector_ne_zero : L ≠ 0 :=
   norm_ne_zero_iff.mp (maximal_vector_pos v hv₁).ne.symm
 
-lemma maximal_vector_sum_compl : L + ∑ i in (maximal_indicies v)ᶜ, v i = 0 := by
+lemma maximal_vector_sum_compl : L + ∑ i in Iᶜ, v i = 0 := by
   unfold maximal_vector
   rwa [add_comm, Finset.sum_compl_add_sum]
 
-lemma sum_compl_eq_neg_maximal_vector : ∑ i in (maximal_indicies v)ᶜ, v i = - L :=
+lemma sum_compl_eq_neg_maximal_vector : ∑ i in Iᶜ, v i = - L :=
   eq_neg_of_add_eq_zero_right (maximal_vector_sum_compl v hv₂)
 
-private lemma same_direction_as_maximal_vector' (i : Fin m) (hi₁ : i ∈ maximal_indicies v) (hi₂ : i ≠ 0)
+private lemma same_direction_as_maximal_vector' (i : Fin m) (hi₁ : i ∈ I) (hi₂ : i ≠ 0)
   : (0 : ℝ) ≤ ⟪v i, L⟫_ℝ := by
   by_contra! h
   have : ‖(1 / ‖L‖) • L‖ = (1 : ℝ) := by
     simp [norm_smul, inv_mul_cancel (maximal_vector_pos v hv₁).ne.symm]
   have : (1 / ‖L‖) * ⟪v i, L⟫_ℝ < 0 := by
     exact mul_neg_of_pos_of_neg (div_pos one_pos (maximal_vector_pos v hv₁)) h
-  have := maximal_vector_spec v ((maximal_indicies v).erase i)
+  have := maximal_vector_spec v (Finset.erase I i)
   specialize this (Finset.mem_erase.mpr ⟨hi₂.symm, zero_mem_maximal_indicies v⟩)
   rw [Finset.sum_erase_eq_sub hi₁] at this
   change ‖L - v i‖ ≤ ‖L‖ at this
@@ -111,12 +113,12 @@ private lemma same_direction_as_maximal_vector' (i : Fin m) (hi₁ : i ∈ maxim
 
 private lemma v0_same_direction_as_maximal_vector : (0 : ℝ) ≤ ⟪v 0, L⟫_ℝ := by
   by_contra! h
-  apply not_lt.mpr (maximal_vector_spec v ({0} ∪ (maximal_indicies v)ᶜ) (by aesop))
+  apply not_lt.mpr (maximal_vector_spec v ({0} ∪ Iᶜ) (by aesop))
   have : ‖‖L‖⁻¹ • (- L)‖ = (1 : ℝ) := by
     rw [norm_smul, norm_neg, norm_inv, norm_norm]
     exact inv_mul_cancel (by aesop)
   have : ‖L‖⁻¹ * ⟪v 0, L⟫_ℝ < 0 := mul_neg_of_pos_of_neg (by aesop) h
-  have : v 0 - L = ∑ i in ({0} ∪ (maximal_indicies v)ᶜ), v i := by
+  have : v 0 - L = ∑ i in ({0} ∪ Iᶜ), v i := by
     rw [←Finset.insert_eq, Finset.sum_insert (Finset.not_mem_compl.mpr (zero_mem_maximal_indicies v))]
     have := maximal_vector_sum_compl v hv₂
     rw [←eq_neg_iff_add_eq_zero] at this
@@ -127,21 +129,21 @@ private lemma v0_same_direction_as_maximal_vector : (0 : ℝ) ≤ ⟪v 0, L⟫_�
       rw [real_inner_smul_left, inner_sub_right]
       rw [real_inner_self_eq_norm_sq]
       rw [mul_sub, neg_sub, sq, ←mul_assoc, inv_mul_mul_self, real_inner_comm]
-    _ = ⟪‖L‖⁻¹ • (- L), ∑ i in ({0} ∪ (maximal_indicies v)ᶜ), v i⟫_ℝ := by rw [this]
-    _ ≤ ‖‖L‖⁻¹ • (- L)‖ * ‖∑ i in ({0} ∪ (maximal_indicies v)ᶜ), v i‖ := real_inner_le_norm _ _
-    _ ≤ ‖∑ i in ({0} ∪ (maximal_indicies v)ᶜ), v i‖ := by simp_all
+    _ = ⟪‖L‖⁻¹ • (- L), ∑ i in ({0} ∪ Iᶜ), v i⟫_ℝ := by rw [this]
+    _ ≤ ‖‖L‖⁻¹ • (- L)‖ * ‖∑ i in ({0} ∪ Iᶜ), v i‖ := real_inner_le_norm _ _
+    _ ≤ ‖∑ i in ({0} ∪ Iᶜ), v i‖ := by simp_all
 
-lemma same_direction_as_maximal_vector (i : Fin m) (h : i ∈ maximal_indicies v)
+lemma same_direction_as_maximal_vector (i : Fin m) (h : i ∈ I)
   : (0 : ℝ) ≤ ⟪v i, L⟫_ℝ := by
   by_cases h₁ : i = 0
   · rw [h₁]
     exact v0_same_direction_as_maximal_vector v hv₁ hv₂
   · exact same_direction_as_maximal_vector' v hv₁ i h h₁
 
-lemma opposite_direction_as_maximal_vector (i : Fin m) (h : i ∉ maximal_indicies v)
+lemma opposite_direction_as_maximal_vector (i : Fin m) (h : i ∉ I)
   : ⟪v i, L⟫_ℝ ≤ (0 : ℝ) := by
   by_contra! h₁
-  apply not_lt.mpr (maximal_vector_spec v ({i} ∪ maximal_indicies v)
+  apply not_lt.mpr (maximal_vector_spec v ({i} ∪ I)
     (Finset.mem_union_right _ (zero_mem_maximal_indicies v)))
   calc ‖L‖ < ‖L‖ + ‖L‖⁻¹ * ⟪v i, L⟫_ℝ := by
         aesop
@@ -151,7 +153,7 @@ lemma opposite_direction_as_maximal_vector (i : Fin m) (h : i ∉ maximal_indici
       _ ≤ ‖L + v i‖ * ‖‖L‖⁻¹ • L‖ := real_inner_le_norm _ _
       _ = ‖L + v i‖ := by
         rw [norm_smul, norm_inv, norm_norm, inv_mul_cancel (by aesop), mul_one]
-      _ = ‖∑ j in {i} ∪ maximal_indicies v, v j‖ := by
+      _ = ‖∑ j in {i} ∪ I, v j‖ := by
         rw [←Finset.insert_eq, Finset.sum_insert h, add_comm]
         rfl
 
@@ -161,6 +163,8 @@ section induction_lemmas
 
 variable {n m : ℕ} [hm : NeZero m] (v : Fin m → EuclideanSpace ℝ (Fin (n + 1)))
   (hv₁ : ∑ i : Fin m, v i = 0) (hv₂ : ∀ i : Fin m, ‖v i‖ ≤ 1) (hv₃ : ∃ i : Fin m, v i ≠ 0)
+
+local notation "I" => maximal_indicies v
 
 local notation "L" => maximal_vector v
 
@@ -204,14 +208,14 @@ local notation "v'_repr" => (OrthonormalBasis.repr (L_perp_orthonormalBasis v hv
 lemma v_proj_add_v' (i : Fin m) : (v_proj i : EuclideanSpace ℝ (Fin (n + 1))) + v' i = v i :=
   L_projection_add_L_perp_projection v (v i)
 
-lemma v'_sum_maximal : ∑ i in maximal_indicies v, v' i = 0 := by
-  have : ∑ i in maximal_indicies v, v i = L := rfl
+lemma v'_sum_maximal : ∑ i in I, v' i = 0 := by
+  have : ∑ i in I, v i = L := rfl
   apply_fun orthogonalProjection L_perp at this
   rw [map_sum] at this
   rw [orthogonalProjection_orthogonalComplement_singleton_eq_zero] at this
   exact this
 
-lemma v'_sum_maximal_compl : ∑ i in (maximal_indicies v)ᶜ, v' i = 0 := by
+lemma v'_sum_maximal_compl : ∑ i in Iᶜ, v' i = 0 := by
   have := sum_compl_eq_neg_maximal_vector v hv₁
   apply_fun orthogonalProjection L_perp at this
   rw [map_sum, map_neg] at this
@@ -219,9 +223,9 @@ lemma v'_sum_maximal_compl : ∑ i in (maximal_indicies v)ᶜ, v' i = 0 := by
   rw [neg_zero] at this
   exact this
 
-local notation "s" => Finset.card (maximal_indicies v)
+local notation "s" => Finset.card I
 
-local notation "t" => Finset.card ((maximal_indicies v)ᶜ)
+local notation "t" => Finset.card Iᶜ
 
 lemma s_add_t : s + t = m := by
   rw [add_comm, Finset.card_compl_add_card, Fintype.card_fin]
