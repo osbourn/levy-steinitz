@@ -245,6 +245,9 @@ local instance : NeZero s := by
   have : Finset.card I ≠ 0 := (Finset.Nonempty.card_pos ⟨0, zero_mem_maximal_indicies v⟩).ne.symm
   contradiction
 
+/--
+This instance might be slightly problematic because it depends on `v`, `hv₁`, and `hv₃`
+-/
 local instance : NeZero t := by
   apply NeZero.mk
   intro h
@@ -260,6 +263,18 @@ local instance : NeZero t := by
 
 lemma s_add_t : s + t = m := by
   rw [add_comm, Finset.card_compl_add_card, Fintype.card_fin]
+
+/--
+`u` is the sequence of vectors `v'_repr` in `ℝ^n`, skipping over vectors not in `I`.
+If `I` is `{0,1,3,5}`, then `u 0 = v'_repr 0`, `u 1 = v'_repr 1`, `u 2 = v'_repr 3`, and
+`u 3 = v'_repr 5`.
+-/
+local notation "u" => v'_repr ∘ (Finset.orderEmbOfFin I (rfl : Finset.card I = s))
+
+/--
+`w` is like `u`, but for indicies in `Iᶜ` instead of `I`
+-/
+local notation "w" => v'_repr ∘ (Finset.orderEmbOfFin Iᶜ (rfl : Finset.card Iᶜ = t))
 
 end induction_lemmas
 
