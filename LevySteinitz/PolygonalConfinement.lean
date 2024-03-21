@@ -8,6 +8,11 @@ noncomputable def polygonalConstant : ℕ → ℝ
 | 0 => 0
 | n + 1 => Real.sqrt (4 * (polygonalConstant n) ^ 2 + 1)
 
+lemma polygonalConstant_nonneg (n : ℕ) : 0 ≤ polygonalConstant n := by
+  cases n with
+  | zero => exact le_rfl
+  | succ n => exact Real.sqrt_nonneg _
+
 -- Might be needed if the base case for induction needs to be `1` rather than `0`
 lemma polygonalConstantOne : polygonalConstant 1 = 1 := by
   unfold polygonalConstant
@@ -298,10 +303,20 @@ noncomputable def w := v'_repr ∘ (I_compl_orderEmb v)
 noncomputable def s' := s
 noncomputable def t' := t
 
-  variable (h_ind_u : ∃ P : Equiv.Perm (Fin (s' v)), P ⟨0, s_pos v⟩ = ⟨0, s_pos v⟩ ∧
+variable (h_ind_u : ∃ P : Equiv.Perm (Fin (s' v)), P ⟨0, s_pos v⟩ = ⟨0, s_pos v⟩ ∧
   ∀ j : Fin (s' v), ‖∑ i in Finset.Iic j, u v hv₃ i‖ ≤ polygonalConstant n)
 variable (h_ind_w : ∃ P : Equiv.Perm (Fin (t' v)), P ⟨0, t_pos v hv₁ hv₃⟩ = ⟨0, t_pos v hv₁ hv₃⟩ ∧
   ∀ j : Fin (t' v), ‖∑ i in Finset.Iic j, w v hv₃ i‖ ≤ polygonalConstant n)
+
+def induction_step : ∃ P : Equiv.Perm (Fin m), P 0 = 0 ∧
+  ∀ j : Fin m, ‖∑ i in Finset.Iic j, v i‖ ≤ polygonalConstant (n + 1) := by
+  -- Temporary declarations to make sure `induction_step` has all the needed variables
+  have := hv₁
+  have := hv₂
+  have := hv₃
+  have := h_ind_u
+  have := h_ind_w
+  sorry
 
 end induction_lemmas
 
@@ -309,4 +324,11 @@ theorem polygonal_confinement_theorem {n m : ℕ} [hm : NeZero m]
   {v : Fin m → EuclideanSpace ℝ (Fin n)}
   (hv₁ : ∑ i : Fin m, v i = 0) (hv₂ : ∀ i : Fin m, ‖v i‖ ≤ 1) :
   ∃ P : Equiv.Perm (Fin m), P 0 = 0 ∧
-  ∀ j : Fin m, ‖∑ i in Finset.Iic j, v i‖ ≤ polygonalConstant n := sorry
+  ∀ j : Fin m, ‖∑ i in Finset.Iic j, v i‖ ≤ polygonalConstant n := by
+    by_cases hc : ∀ i, v i = 0
+    · use (Equiv.refl (Fin m))
+      constructor
+      · rfl
+      · simp [hc, polygonalConstant_nonneg n]
+    · push_neg at hc
+      sorry
