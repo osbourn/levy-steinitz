@@ -239,17 +239,14 @@ local notation "s" => Finset.card I
 
 local notation "t" => Finset.card Iᶜ
 
-local instance : NeZero s := by
+local instance s_ne_zero : NeZero s := by
   apply NeZero.mk
   intro h
   have : Finset.card I ≠ 0 := (Finset.Nonempty.card_pos ⟨0, zero_mem_maximal_indicies v⟩).ne.symm
   contradiction
 
-/--
-This instance might be slightly problematic because it depends on `v`, `hv₁`, and `hv₃`
--/
-local instance : NeZero t := by
-  apply NeZero.mk
+lemma t_pos : 0 < t := by
+  rw [Nat.pos_iff_ne_zero]
   intro h
   rw [Finset.card_eq_zero, Finset.compl_eq_empty_iff] at h
   rcases hv₃ with ⟨i, hi⟩
@@ -260,6 +257,12 @@ local instance : NeZero t := by
   · apply not_lt.mpr (maximal_vector_spec v (Finset.univ.erase i)
       (Finset.mem_erase.mpr ⟨(Ne.intro hi₂).symm, Finset.mem_univ 0⟩))
     simp [L_eq_zero, hv₁, hi]
+
+/--
+This instance might be slightly problematic because it depends on `v`, `hv₁`, and `hv₃`
+-/
+local instance t_ne_zero : NeZero t :=
+  ⟨(t_pos v hv₁ hv₃).ne.symm⟩
 
 lemma s_add_t : s + t = m := by
   rw [add_comm, Finset.card_compl_add_card, Fintype.card_fin]
@@ -275,6 +278,11 @@ local notation "u" => v'_repr ∘ (Finset.orderEmbOfFin I (rfl : Finset.card I =
 `w` is like `u`, but for indicies in `Iᶜ` instead of `I`
 -/
 local notation "w" => v'_repr ∘ (Finset.orderEmbOfFin Iᶜ (rfl : Finset.card Iᶜ = t))
+
+variable (h_ind_u : ∃ P : Equiv.Perm (Fin s), P 0 = 0 ∧
+  ∀ j : Fin s, ‖∑ i in Finset.Iic j, u i‖ ≤ polygonalConstant n)
+variable (h_ind_w : ∃ P : Equiv.Perm (Fin t), P ⟨0, t_pos v hv₁ hv₃⟩ = ⟨0, t_pos v hv₁ hv₃⟩ ∧
+  ∀ j : Fin t, ‖∑ i in Finset.Iic j, w i‖ ≤ polygonalConstant n)
 
 end induction_lemmas
 
