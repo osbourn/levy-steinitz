@@ -239,11 +239,14 @@ local notation "s" => Finset.card I
 
 local notation "t" => Finset.card Iᶜ
 
-local instance s_ne_zero : NeZero s := by
-  apply NeZero.mk
+lemma s_pos : 0 < s := by
+  rw [Nat.pos_iff_ne_zero]
   intro h
   have : Finset.card I ≠ 0 := (Finset.Nonempty.card_pos ⟨0, zero_mem_maximal_indicies v⟩).ne.symm
   contradiction
+
+local instance s_ne_zero : NeZero s where
+  out := (s_pos v).ne.symm
 
 lemma t_pos : 0 < t := by
   rw [Nat.pos_iff_ne_zero]
@@ -261,8 +264,8 @@ lemma t_pos : 0 < t := by
 /--
 This instance might be slightly problematic because it depends on `v`, `hv₁`, and `hv₃`
 -/
-local instance t_ne_zero : NeZero t :=
-  ⟨(t_pos v hv₁ hv₃).ne.symm⟩
+local instance t_ne_zero : NeZero t where
+  out := (t_pos v hv₁ hv₃).ne.symm
 
 lemma s_add_t : s + t = m := by
   rw [add_comm, Finset.card_compl_add_card, Fintype.card_fin]
@@ -277,18 +280,28 @@ noncomputable def I_compl_orderEmb : Fin t ↪o Fin m :=
 `u` is the sequence of vectors `v'_repr` in `ℝ^n`, skipping over vectors not in `I`.
 If `I` is `{0,1,3,5}`, then `u 0 = v'_repr 0`, `u 1 = v'_repr 1`, `u 2 = v'_repr 3`, and
 `u 3 = v'_repr 5`.
+
+This is represented as a definition instead of a local notation to work around
+https://github.com/leanprover/lean4/issues/2535
 -/
-local notation "u" => v'_repr ∘ (I_orderEmb v)
+noncomputable def u := v'_repr ∘ (I_orderEmb v)
+--local notation "u" => v'_repr ∘ (I_orderEmb v)
 
 /--
 `w` is like `u`, but for indicies in `Iᶜ` instead of `I`
 -/
-local notation "w" => v'_repr ∘ (I_compl_orderEmb v)
+noncomputable def w := v'_repr ∘ (I_compl_orderEmb v)
+--local notation "w" => v'_repr ∘ (I_compl_orderEmb v)
 
-variable (h_ind_u : ∃ P : Equiv.Perm (Fin s), P 0 = 0 ∧
-  ∀ j : Fin s, ‖∑ i in Finset.Iic j, u i‖ ≤ polygonalConstant n)
-variable (h_ind_w : ∃ P : Equiv.Perm (Fin t), P ⟨0, t_pos v hv₁ hv₃⟩ = ⟨0, t_pos v hv₁ hv₃⟩ ∧
-  ∀ j : Fin t, ‖∑ i in Finset.Iic j, w i‖ ≤ polygonalConstant n)
+-- These definitions are workarounds for https://github.com/leanprover/lean4/issues/2535,
+-- since using `Fin s` directly in a variable declaration causes timeouts and hidden `sorryAx`s.
+noncomputable def s' := s
+noncomputable def t' := t
+
+  variable (h_ind_u : ∃ P : Equiv.Perm (Fin (s' v)), P ⟨0, s_pos v⟩ = ⟨0, s_pos v⟩ ∧
+  ∀ j : Fin (s' v), ‖∑ i in Finset.Iic j, u v hv₃ i‖ ≤ polygonalConstant n)
+variable (h_ind_w : ∃ P : Equiv.Perm (Fin (t' v)), P ⟨0, t_pos v hv₁ hv₃⟩ = ⟨0, t_pos v hv₁ hv₃⟩ ∧
+  ∀ j : Fin (t' v), ‖∑ i in Finset.Iic j, w v hv₃ i‖ ≤ polygonalConstant n)
 
 end induction_lemmas
 
