@@ -267,17 +267,23 @@ local instance t_ne_zero : NeZero t :=
 lemma s_add_t : s + t = m := by
   rw [add_comm, Finset.card_compl_add_card, Fintype.card_fin]
 
+noncomputable def I_orderEmb : Fin s ↪o Fin m :=
+  (Finset.orderEmbOfFin I (rfl : Finset.card I = s))
+
+noncomputable def I_compl_orderEmb : Fin t ↪o Fin m :=
+  (Finset.orderEmbOfFin Iᶜ (rfl : Finset.card Iᶜ = t))
+
 /--
 `u` is the sequence of vectors `v'_repr` in `ℝ^n`, skipping over vectors not in `I`.
 If `I` is `{0,1,3,5}`, then `u 0 = v'_repr 0`, `u 1 = v'_repr 1`, `u 2 = v'_repr 3`, and
 `u 3 = v'_repr 5`.
 -/
-local notation "u" => v'_repr ∘ (Finset.orderEmbOfFin I (rfl : Finset.card I = s))
+local notation "u" => v'_repr ∘ (I_orderEmb v)
 
 /--
 `w` is like `u`, but for indicies in `Iᶜ` instead of `I`
 -/
-local notation "w" => v'_repr ∘ (Finset.orderEmbOfFin Iᶜ (rfl : Finset.card Iᶜ = t))
+local notation "w" => v'_repr ∘ (I_compl_orderEmb v)
 
 variable (h_ind_u : ∃ P : Equiv.Perm (Fin s), P 0 = 0 ∧
   ∀ j : Fin s, ‖∑ i in Finset.Iic j, u i‖ ≤ polygonalConstant n)
