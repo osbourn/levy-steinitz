@@ -240,6 +240,12 @@ lemma v'_repr_sum_maximal_compl : ∑ i in Iᶜ, v'_repr i = 0 := by
   rw [map_sum, map_zero] at this
   exact this
 
+lemma norm_v'_repr_le_one (i : Fin m) : ‖v'_repr i‖ ≤ 1 := by
+  rw [Function.comp_apply]
+  rw [LinearIsometryEquiv.norm_map]
+  rw [Function.comp_apply]
+  sorry
+
 local notation "s" => Finset.card I
 
 local notation "t" => Finset.card Iᶜ
@@ -307,6 +313,12 @@ lemma u_sum : ∑ i : Fin s, u v hv₃ i = 0 := by
   rw [Finset.univ_eq_attach, Finset.sum_map, Function.Embedding.coe_subtype, Finset.sum_attach]
   exact v'_repr_sum_maximal v hv₃
 
+lemma norm_u_le_one (i : Fin s) : ‖u v hv₃ i‖ ≤ 1 :=
+  norm_v'_repr_le_one v hv₃ _
+
+lemma norm_w_le_one (i : Fin t) : ‖w v hv₃ i‖ ≤ 1 :=
+  norm_v'_repr_le_one v hv₃ _
+
 -- These definitions are workarounds for https://github.com/leanprover/lean4/issues/2535,
 -- since using `Fin s` directly in a variable declaration causes timeouts and hidden `sorryAx`s.
 noncomputable def s' := s
@@ -351,6 +363,6 @@ theorem polygonal_confinement_theorem {n m : ℕ} [hm : NeZero m]
         apply induction_step v hv₁ hv₂ hc
         · apply ih (hm := s_ne_zero v)
           · exact u_sum v hc
-          · sorry
+          · exact norm_u_le_one v hc
           · sorry
         · sorry
