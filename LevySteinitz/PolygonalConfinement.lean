@@ -350,7 +350,7 @@ theorem polygonal_confinement_theorem {n m : ℕ} [hm : NeZero m]
       | succ n ih =>
         apply induction_step v hv₁ hv₂ hc
         · apply ih (hm := s_ne_zero v)
-          · sorry
+          · exact u_sum v hc
           · sorry
           · sorry
         · sorry
