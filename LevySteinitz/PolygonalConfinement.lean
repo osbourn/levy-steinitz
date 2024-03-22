@@ -298,6 +298,14 @@ noncomputable def u := v'_repr ∘ (I_orderEmb v)
 noncomputable def w := v'_repr ∘ (I_compl_orderEmb v)
 --local notation "w" => v'_repr ∘ (I_compl_orderEmb v)
 
+lemma u_sum : ∑ i : Fin s, u v hv₃ i = 0 := by
+  change ∑ i in Finset.univ, v'_repr (I_orderEmb v i) = 0
+  have := Finset.sum_map Finset.univ ((I_orderEmb v).toEmbedding : Fin s ↪ Fin m) v'_repr
+  rw [RelEmbedding.coe_toEmbedding] at this
+  rw [←this]
+  clear this
+  sorry
+
 -- These definitions are workarounds for https://github.com/leanprover/lean4/issues/2535,
 -- since using `Fin s` directly in a variable declaration causes timeouts and hidden `sorryAx`s.
 noncomputable def s' := s
@@ -329,6 +337,19 @@ theorem polygonal_confinement_theorem {n m : ℕ} [hm : NeZero m]
     · use (Equiv.refl (Fin m))
       constructor
       · rfl
-      · simp [hc, polygonalConstant_nonneg n]
+      · simp [hc, polygonalConstant_nonneg]
     · push_neg at hc
-      sorry
+      induction n generalizing m with
+      | zero =>
+        use (Equiv.refl (Fin m))
+        constructor
+        · rfl
+        · intro j
+          simpa [norm_of_subsingleton] using le_rfl
+      | succ n ih =>
+        apply induction_step v hv₁ hv₂ hc
+        · apply ih (hm := s_ne_zero v)
+          · sorry
+          · sorry
+          · sorry
+        · sorry
