@@ -354,21 +354,20 @@ theorem polygonal_confinement_theorem {n m : ℕ} [hm : NeZero m]
   ∀ j : Fin m, ‖∑ i in Finset.Iic j, v i‖ ≤ polygonalConstant n := by
     by_cases hc : ∀ i, v i = 0
     · use (Equiv.refl (Fin m))
-      constructor
-      · rfl
-      · simp [hc, polygonalConstant_nonneg]
+      simp [hc, polygonalConstant_nonneg]
     · push_neg at hc
       induction n generalizing m with
       | zero =>
         use (Equiv.refl (Fin m))
-        constructor
-        · rfl
-        · intro j
-          simpa [norm_of_subsingleton] using le_rfl
+        simpa [norm_of_subsingleton] using le_rfl
       | succ n ih =>
         apply induction_step v hv₁ hv₂ hc
-        · apply ih (hm := s_ne_zero v)
-          · exact u_sum v hc
-          · exact norm_u_le_one v hv₂ hc
-          · sorry
+        · by_cases hu : ∀ i : Fin (maximal_indicies v).card, u v hc i = 0
+          · use (Equiv.refl _)
+            simp [hu, polygonalConstant_nonneg]
+          · push_neg at hu
+            apply ih (hm := s_ne_zero v)
+            · exact u_sum v hc
+            · exact norm_u_le_one v hv₂ hc
+            · exact hu
         · sorry
