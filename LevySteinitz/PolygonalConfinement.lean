@@ -300,11 +300,23 @@ noncomputable def w := v'_repr ∘ (I_compl_orderEmb v)
 
 lemma u_sum : ∑ i : Fin s, u v hv₃ i = 0 := by
   change ∑ i in Finset.univ, v'_repr (I_orderEmb v i) = 0
-  have := Finset.sum_map Finset.univ ((I_orderEmb v).toEmbedding : Fin s ↪ Fin m) v'_repr
-  rw [RelEmbedding.coe_toEmbedding] at this
-  rw [←this]
-  clear this
-  sorry
+  --unfold I_orderEmb
+  --simp_rw [←Finset.coe_orderIsoOfFin_apply]
+  --change ∑ i in Finset.univ, v'_repr (Finset.orderIsoOfFin I rfl i) = 0
+  let f : { x : Fin m // x ∈ I } → EuclideanSpace ℝ (Fin n) := fun x => v'_repr ↑x
+  change ∑ i in Finset.univ, f ((Finset.orderIsoOfFin I rfl).toEquiv.toEmbedding i) = 0
+  rw [←Finset.sum_map Finset.univ ((Finset.orderIsoOfFin I rfl).toEquiv.toEmbedding) f]
+  rw [Finset.map_univ_equiv]
+  have : ∀ x ∈ (Finset.univ : Finset { x : Fin m // x ∈ I }), v'_repr ↑x = f x := fun x hx => rfl
+  rw [←Finset.sum_subtype_map_embedding this]
+  rw [Finset.univ_eq_attach, Finset.sum_map, Function.Embedding.coe_subtype]
+  rw [Finset.sum_attach]
+  exact v'_repr_sum_maximal v hv₃
+  --simp only [Finset.univ_eq_attach, Function.comp_apply, Finset.sum_map, Function.Embedding.coe_subtype]
+  --have := Finset.sum_map Finset.univ ((I_orderEmb v).toEmbedding : Fin s ↪ Fin m) v'_repr
+  --rw [RelEmbedding.coe_toEmbedding] at this
+  --rw [←this]
+  --clear this
 
 -- These definitions are workarounds for https://github.com/leanprover/lean4/issues/2535,
 -- since using `Fin s` directly in a variable declaration causes timeouts and hidden `sorryAx`s.
