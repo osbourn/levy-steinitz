@@ -319,6 +319,15 @@ lemma u_sum : ∑ i : Fin s, u v hv₃ i = 0 := by
   rw [Finset.univ_eq_attach, Finset.sum_map, Function.Embedding.coe_subtype, Finset.sum_attach]
   exact v'_repr_sum_maximal v hv₃
 
+lemma w_sum : ∑ i : Fin t, w v hv₃ i = 0 := by
+  let f : { x : Fin m // x ∈ Iᶜ } → EuclideanSpace ℝ (Fin n) := fun x => v'_repr ↑x
+  change ∑ i in Finset.univ, f ((Finset.orderIsoOfFin Iᶜ rfl).toEquiv.toEmbedding i) = 0
+  rw [←Finset.sum_map Finset.univ _ f]
+  rw [Finset.map_univ_equiv]
+  rw [←Finset.sum_subtype_map_embedding (fun x _ => rfl)]
+  rw [Finset.univ_eq_attach, Finset.sum_map, Function.Embedding.coe_subtype, Finset.sum_attach]
+  exact v'_repr_sum_maximal_compl v hv₁ hv₃
+
 lemma norm_u_le_one (i : Fin s) : ‖u v hv₃ i‖ ≤ 1 :=
   norm_v'_repr_le_one v hv₂ hv₃ _
 
