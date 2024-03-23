@@ -379,4 +379,11 @@ theorem polygonal_confinement_theorem {n m : ℕ} [hm : NeZero m]
             · exact u_sum v hc
             · exact norm_u_le_one v hv₂ hc
             · exact hu
-        · sorry
+        · by_cases hw : ∀ i : Fin (maximal_indicies v)ᶜ.card, w v hc i = 0
+          · use (Equiv.refl _)
+            simp [hw, polygonalConstant_nonneg]
+          · push_neg at hw
+            apply ih (hm := t_ne_zero v hv₁ hc)
+            · exact w_sum v hv₁ hc
+            · exact norm_w_le_one v hv₂ hc
+            · exact hw
