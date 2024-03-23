@@ -1,4 +1,5 @@
 import Mathlib
+import LevySteinitz.PermutationBuilder
 
 set_option autoImplicit false
 
@@ -343,6 +344,13 @@ variable (h_ind_u : ∃ P : Equiv.Perm (Fin (s' v)), P ⟨0, s_pos v⟩ = ⟨0, 
   ∀ j : Fin (s' v), ‖∑ i in Finset.Iic j, u v hv₃ i‖ ≤ polygonalConstant n)
 variable (h_ind_w : ∃ P : Equiv.Perm (Fin (t' v)), P ⟨0, t_pos v hv₁ hv₃⟩ = ⟨0, t_pos v hv₁ hv₃⟩ ∧
   ∀ j : Fin (t' v), ‖∑ i in Finset.Iic j, w v hv₃ i‖ ≤ polygonalConstant n)
+
+def polygonal_confinement_permutationBuilder : PermutationBuilder m where
+  invariant (l : List (Fin m)) := True
+  next {l : List (Fin m)} : True → l.length < m → Fin m := sorry
+  no_duplicates {l : List (Fin m)} (h₁ : True) (h₂ : l.length < m) := sorry
+  preserves_invariant {l : List (Fin m)} (h₁ : True) (h₂ : l.length < m) := sorry
+  invariant_empty := sorry
 
 def induction_step : ∃ P : Equiv.Perm (Fin m), P 0 = 0 ∧
   ∀ j : Fin m, ‖∑ i in Finset.Iic j, v i‖ ≤ polygonalConstant (n + 1) := by
