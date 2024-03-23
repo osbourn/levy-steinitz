@@ -345,9 +345,27 @@ variable (h_ind_u : ∃ P : Equiv.Perm (Fin (s' v)), P ⟨0, s_pos v⟩ = ⟨0, 
 variable (h_ind_w : ∃ P : Equiv.Perm (Fin (t' v)), P ⟨0, t_pos v hv₁ hv₃⟩ = ⟨0, t_pos v hv₁ hv₃⟩ ∧
   ∀ j : Fin (t' v), ‖∑ i in Finset.Iic j, w v hv₃ i‖ ≤ polygonalConstant n)
 
-def polygonal_confinement_permutationBuilder : PermutationBuilder m where
+lemma List.length_dedup_le {α : Type*} [DecidableEq α] (l : List α)
+  : (List.dedup l).length ≤ l.length := Sublist.length_le (dedup_sublist l)
+
+lemma List.toFinset_ne_univ_of_length_lt_card {α : Type*} [Fintype α] [DecidableEq α] {l : List α}
+  (h : l.length < Fintype.card α) : l.toFinset ≠ Finset.univ := by
+  intro hc
+  rw [←Finset.card_univ, ←hc, List.card_toFinset, ←not_le] at h
+  exact h (List.length_dedup_le l)
+
+noncomputable def next_finset (l : Finset (Fin m)) (hi : True) (hl : l ≠ Finset.univ) : Fin m :=
+  if l.sum (⟪v ·, L⟫_ℝ) ≤ 0 then
+    find_excluding I l sorry
+  else
+    find_excluding Iᶜ l sorry
+
+noncomputable def next_list (l : List (Fin m)) (hi : True) (hl : l.length < m) : Fin m :=
+  next_finset v l.toFinset hi (List.toFinset_ne_univ_of_length_lt_card (by rwa [Fintype.card_fin]))
+
+noncomputable def polygonal_confinement_permutationBuilder : PermutationBuilder m where
   invariant (l : List (Fin m)) := True
-  next {l : List (Fin m)} : True → l.length < m → Fin m := sorry
+  next {l : List (Fin m)} : True → l.length < m → Fin m := next_list v l
   no_duplicates {l : List (Fin m)} (h₁ : True) (h₂ : l.length < m) := sorry
   preserves_invariant {l : List (Fin m)} (h₁ : True) (h₂ : l.length < m) := sorry
   invariant_empty := sorry
