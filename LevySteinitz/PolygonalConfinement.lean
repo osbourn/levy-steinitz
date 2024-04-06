@@ -354,19 +354,20 @@ lemma List.toFinset_ne_univ_of_length_lt_card {α : Type*} [Fintype α] [Decidab
   rw [←Finset.card_univ, ←hc, List.card_toFinset, ←not_le] at h
   exact h (List.length_dedup_le l)
 
-noncomputable def next_finset (l : Finset (Fin m)) (hi : True) (hl : l ≠ Finset.univ) : Fin m :=
+noncomputable def next_term_of_finset (l : Finset (Fin m)) (hi : True) (hl : l ≠ Finset.univ) : Fin m :=
   if l.sum (⟪v ·, L⟫_ℝ) ≤ 0 then
     find_excluding I l sorry
   else
     find_excluding Iᶜ l sorry
 
-noncomputable def next_list (l : List (Fin m)) (hi : True) (hl : l.length < m) : Fin m :=
-  next_finset v l.toFinset hi (List.toFinset_ne_univ_of_length_lt_card (by rwa [Fintype.card_fin]))
+noncomputable def next_term (l : List (Fin m)) (hi : True) (hl : l.length < m) : Fin m :=
+  next_term_of_finset v l.toFinset hi (List.toFinset_ne_univ_of_length_lt_card (by rwa [Fintype.card_fin]))
 
 noncomputable def polygonal_confinement_permutationBuilder : PermutationBuilder m where
   invariant (l : List (Fin m)) := True
-  next {l : List (Fin m)} : True → l.length < m → Fin m := next_list v l
-  no_duplicates {l : List (Fin m)} (h₁ : True) (h₂ : l.length < m) := sorry
+  next {l : List (Fin m)} : True → l.length < m → Fin m := next_term v l
+  no_duplicates {l : List (Fin m)} (h₁ : True) (h₂ : l.length < m) : next_term v l h₁ h₂ ∉ l := by
+    sorry
   preserves_invariant {l : List (Fin m)} (h₁ : True) (h₂ : l.length < m) := sorry
   invariant_empty := sorry
 
