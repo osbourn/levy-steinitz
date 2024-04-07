@@ -26,26 +26,18 @@ lemma find_excluding_not_mem {n : ℕ} (s : Finset (Fin n)) (exclusions : Finset
     have := find_excluding_spec s exclusions h
     simp_all [Finset.mem_sdiff]
 
-def FinVec.append {α : Type*} {m : ℕ} (f : Fin m → α) (a : α) (x : Fin (m + 1)) : α :=
-  if h : ↑x < m then f (Fin.castLT x h) else a
-
-lemma FinVec.append_injective {α : Type*} {m : ℕ} {f : Fin m → α} {a : α}
-  (hf : Function.Injective f) (ha : a ∉ Set.range f) : Function.Injective (FinVec.append f a) := by
-  intro x y h
-  unfold append at h
-  by_cases hx : ↑x < m <;> by_cases hy : ↑y < m
-  · rw [dif_pos hx, dif_pos hy] at h
-    exact Fin.ext (Fin.mk.inj_iff.mp (hf h))
+lemma Fin.snoc_injective {n : ℕ} {α : Type*} {p : Fin n → α} (hp : Function.Injective p)
+  {x : α} (hx : x ∉ Set.range p) : Function.Injective (Fin.snoc p x) := by
+  intro j k h
+  unfold snoc at h
+  by_cases hj : ↑j < n <;> by_cases hk : ↑k < n
+  · rw [dif_pos hj, dif_pos hk] at h
+    exact Fin.ext (Fin.mk.inj_iff.mp (hp h))
   · exfalso
-    rw [dif_pos hx, dif_neg hy] at h
-    rw [←h] at ha
-    exact ha (Set.mem_range_self _)
+    aesop
   · exfalso
-    rw [dif_neg hx, dif_pos hy] at h
-    rw [h] at ha
-    exact ha (Set.mem_range_self _)
+    apply hx
+    simp_all
   · apply Fin.ext
-    push_neg at hx
-    push_neg at hy
-    rw [←Nat.le_antisymm hx (Fin.is_le x)]
-    rw [←Nat.le_antisymm hy (Fin.is_le y)]
+    rw [←Nat.le_antisymm (Nat.not_lt.mp hj) (Fin.is_le j)]
+    rw [←Nat.le_antisymm (Nat.not_lt.mp hk) (Fin.is_le k)]
