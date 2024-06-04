@@ -1,5 +1,7 @@
 import Mathlib
 
+set_option autoImplicit false
+
 lemma isSome_find_mem_sdiff {n : ℕ} {s₁ : Finset (Fin n)} {s₂ : Finset (Fin n)}
   (h : ¬s₁ ⊆ s₂) : (Fin.find (· ∈ s₁ \ s₂)).isSome = true := by
     rw [Fin.isSome_find_iff]
@@ -41,3 +43,19 @@ lemma Fin.snoc_injective {n : ℕ} {α : Type*} {p : Fin n → α} (hp : Functio
   · apply Fin.ext
     rw [←Nat.le_antisymm (Nat.not_lt.mp hj) (Fin.is_le j)]
     rw [←Nat.le_antisymm (Nat.not_lt.mp hk) (Fin.is_le k)]
+
+def growing_list {α : Type*} (g : List α → α) : ℕ → List α
+| 0 => []
+| n + 1 => let l := growing_list g n; List.concat l (g l)
+
+-- A list of 8 elements where each element is one more than the sum of the previous elements
+#eval growing_list (fun (l : List ℕ) => List.sum l + 1) 20
+-- [1, 2, 4, 8, 16, 32, 64, 128]
+
+def growing_fin_vec {α : Type*} (g : (n : ℕ) → (Fin n → α) → α) : (n : ℕ) → Fin n → α
+| 0 => fun _ => g 0 isEmptyElim
+| n + 1 => let f := growing_fin_vec g n; Fin.snoc f (g n f)
+
+#eval FinVec.map Thunk.get $ growing_fin_vec (fun n (f : Fin n → Thunk ℕ) =>
+  Thunk.mk (fun _ => Finset.univ.sum (Thunk.get ∘ f) + 1)) 13 -- Takes a long time
+-- ![1, 2, 4, 8, 16, 32, 64, 128]
