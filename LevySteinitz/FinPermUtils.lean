@@ -56,14 +56,15 @@ match n with
   unfold recGen
   aesop
 
--- A list of 8 elements where each element is one more than the sum of the previous elements
-#eval List.recGen (fun (l : List ℕ) => List.sum l + 1) 20
+-- A list where each element is one more than the sum of the previous elements
+#eval List.recGen (fun (l : List ℕ) => List.sum l + 1) 100
 -- [1, 2, 4, 8, 16, 32, 64, 128]
+
+def FinVec.recGen {α : Type*} (g : (n : ℕ) → (Fin n → α) → α) (n : ℕ) (i : Fin n) : α :=
+  List.get (List.recGen (fun l => g l.length l.get) n) (Fin.cast (List.length_recGen _ n).symm i)
+
+#eval FinVec.recGen (fun _ f => Finset.univ.sum f + 1) 100
 
 def growing_fin_vec {α : Type*} (g : (n : ℕ) → (Fin n → α) → α) : (n : ℕ) → Fin n → α
 | 0 => fun _ => g 0 isEmptyElim
 | n + 1 => let f := growing_fin_vec g n; Fin.snoc f (g n f)
-
-#eval FinVec.map Thunk.get $ growing_fin_vec (fun n (f : Fin n → Thunk ℕ) =>
-  Thunk.mk (fun _ => Finset.univ.sum (Thunk.get ∘ f) + 1)) 13 -- Takes a long time
--- ![1, 2, 4, 8, 16, 32, 64, 128]
