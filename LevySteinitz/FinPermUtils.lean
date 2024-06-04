@@ -44,12 +44,20 @@ lemma Fin.snoc_injective {n : ℕ} {α : Type*} {p : Fin n → α} (hp : Functio
     rw [←Nat.le_antisymm (Nat.not_lt.mp hj) (Fin.is_le j)]
     rw [←Nat.le_antisymm (Nat.not_lt.mp hk) (Fin.is_le k)]
 
-def growing_list {α : Type*} (g : List α → α) : ℕ → List α
+def List.recGen {α : Type*} (g : List α → α) : ℕ → List α
 | 0 => []
-| n + 1 => let l := growing_list g n; List.concat l (g l)
+| n + 1 => let l := List.recGen g n; List.concat l (g l)
+
+lemma List.length_recGen {α : Type*} (g : List α → α) (n : ℕ) : (List.recGen g n).length = n :=
+match n with
+| 0 => rfl
+| n + 1 => by
+  have := List.length_recGen g n
+  unfold recGen
+  aesop
 
 -- A list of 8 elements where each element is one more than the sum of the previous elements
-#eval growing_list (fun (l : List ℕ) => List.sum l + 1) 20
+#eval List.recGen (fun (l : List ℕ) => List.sum l + 1) 20
 -- [1, 2, 4, 8, 16, 32, 64, 128]
 
 def growing_fin_vec {α : Type*} (g : (n : ℕ) → (Fin n → α) → α) : (n : ℕ) → Fin n → α
