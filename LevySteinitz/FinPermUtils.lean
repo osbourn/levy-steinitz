@@ -44,6 +44,20 @@ lemma Fin.snoc_injective {n : ℕ} {α : Type*} {p : Fin n → α} (hp : Functio
     rw [←Nat.le_antisymm (Nat.not_lt.mp hj) (Fin.is_le j)]
     rw [←Nat.le_antisymm (Nat.not_lt.mp hk) (Fin.is_le k)]
 
+-- To be removed after updating mathlib to newest version
+theorem List.get_eq_get? {α : Type*} (l : List α) (i : Fin l.length) :
+    l.get i = (l.get? i).get (by simp [get?_eq_get]) := by
+  simp [get_eq_iff]
+
+lemma List.concat_get_last {α : Type*} {a : α} {as : List α} {i : Fin (as.concat a).length}
+  (h : ¬i < as.length) : (as.concat a).get i = a := by
+  rw [List.get_eq_get?]
+  let j := Fin.cast (congr_arg List.length (List.concat_eq_append as a)) i
+  have : (i : ℕ) = ↑j := rfl
+  simp_rw [List.concat_eq_append as a, this]
+  rw [←List.get_eq_get?]
+  exact List.get_last h
+
 def List.recGen {α : Type*} (g : List α → α) : ℕ → List α
 | 0 => []
 | n + 1 => let l := List.recGen g n; List.concat l (g l)
@@ -55,6 +69,9 @@ match n with
   have := List.length_recGen g n
   unfold recGen
   aesop
+
+lemma List.recGen_take {α : Type*} (g : List α → α) (n : ℕ) (k : ℕ) (h : k ≤ n)
+  : List.take k (List.recGen g n) = List.recGen g k := sorry
 
 def FinVec.recGen {α : Type*} (g : (n : ℕ) → (Fin n → α) → α) (n : ℕ) (i : Fin n) : α :=
   List.get (List.recGen (fun l => g l.length l.get) n) (Fin.cast (List.length_recGen _ n).symm i)
@@ -69,7 +86,13 @@ lemma FinVec.recGen_succ {α : Type*} (g : (n : ℕ) → (Fin n → α) → α) 
   --  (Fin.cast (_ : n + 1 = List.length (List.recGen (fun l => g (List.length l) (List.get l)) (n + 1))) i) = _
   change List.get (List.recGen (fun l => g l.length l.get) (n + 1)) _ = _
   change List.get (let l := List.recGen (fun l => g l.length l.get) n; List.concat l (g l.length l.get)) _ = _
-  sorry
+
+  by_cases h : ↑i < n
+  · unfold Fin.snoc
+    rw [dif_pos h, cast_eq]
+    sorry
+  · sorry
+
 
 def growing_fin_vec {α : Type*} (g : (n : ℕ) → (Fin n → α) → α) : (n : ℕ) → Fin n → α
 | 0 => fun _ => g 0 isEmptyElim
