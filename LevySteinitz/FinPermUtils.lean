@@ -58,6 +58,10 @@ lemma List.concat_get_last {α : Type*} {a : α} {as : List α} {i : Fin (as.con
   rw [←List.get_eq_get?]
   exact List.get_last h
 
+lemma List.concat_get_lt {α : Type*} {a : α} {as : List α} {i : Fin (as.concat a).length}
+  (h : i < as.length) : (as.concat a).get i = as.get (Fin.castLT i h) :=
+  sorry
+
 def List.recGen {α : Type*} (g : List α → α) : ℕ → List α
 | 0 => []
 | n + 1 => let l := List.recGen g n; List.concat l (g l)
@@ -84,15 +88,22 @@ lemma FinVec.recGen_succ {α : Type*} (g : (n : ℕ) → (Fin n → α) → α) 
   funext i
   --change List.get (List.recGen (fun l => g l.length l.get) (n + 1))
   --  (Fin.cast (_ : n + 1 = List.length (List.recGen (fun l => g (List.length l) (List.get l)) (n + 1))) i) = _
-  change List.get (List.recGen (fun l => g l.length l.get) (n + 1)) _ = _
-  change List.get (let l := List.recGen (fun l => g l.length l.get) n; List.concat l (g l.length l.get)) _ = _
+  let f (l : List α) := g l.length l.get
+  change List.get (List.recGen f (n + 1)) _ = _
+  change List.get (let l := List.recGen f n; List.concat l (g l.length l.get)) _ = _
 
   by_cases h : ↑i < n
   · unfold Fin.snoc
     rw [dif_pos h, cast_eq]
     sorry
-  · sorry
-
+  · rw [List.concat_get_last sorry]
+    change g _ _ = _
+    have : i = Fin.last n := sorry
+    rw [this, Fin.snoc_last]
+    conv =>
+      rhs
+      rw [←List.length_recGen f n]
+    sorry
 
 def growing_fin_vec {α : Type*} (g : (n : ℕ) → (Fin n → α) → α) : (n : ℕ) → Fin n → α
 | 0 => fun _ => g 0 isEmptyElim
